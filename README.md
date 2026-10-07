@@ -101,9 +101,22 @@ graph TD
 - **Halaman Khusus Mode Offline (`/offline`) & Deteksi Jaringan Real-Time**:
   - Banner peringatan dinamis (*Offline Network Banner*) otomatis muncul saat sinyal Wi-Fi/kuota internet terputus.
   - Halaman khusus `/offline` menyajikan etalase semua buku yang telah diunduh ke memori lokal tablet, memungkinkan siswa melanjutkan kegiatan membaca di ruang kelas tanpa sinyal internet.
-  - Notifikasi Toast informatif otomatis memberitahukan saat koneksi internet kembali pulih (*auto-reconnect*).
+### 9. 🔍 Pencarian Kata di Dalam Buku (*In-Book Search*) & Penandaan Otomatis
+- **Pencarian Instan Seluruh Halaman (*Zero-Latency Search Engine*)**:
+  - Siswa dapat mencari kata kunci, topik, atau istilah spesifik (misal: *"gravitasi"*, *"fotosintesis"*, *"tata surya"*) di seluruh lembaran buku secara *real-time*.
+  - Dukungan pintasan papan ketik cepat: Tekan `Ctrl+F` atau `Cmd+F` di halaman pembaca buku untuk membuka panel pencarian instan.
+- **Cuplikan Kontekstual (*Rich Excerpt Snippets*)**:
+  - Menampilkan ringkasan hasil pencarian per bab dan halaman (misal: *Bab 1 • Hal 2 (3x muncul)*).
+  - Kutipan kalimat konteks (*snippet*) menampilkan kata kunci yang dicari dengan penanda visual warna emas (`<mark class="snippet-highlight">`).
+- **Navigasi Otomatis & Pembalik Lembaran (*Smart Auto-Jump*)**:
+  - Mengklik kartu hasil pencarian akan langsung membalik lembaran buku ke bab & halaman terkait, baik pada mode **Buku 3D** (*StPageFlip*) maupun **Baca Fokus**.
+- **Penandaan Kata Otomatis di Halaman (*In-Page Live Highlighting*)**:
+  - Setiap kemunculan kata pada halaman yang sedang dibuka otomatis disorot dengan penanda `<mark class="in-book-search-match">`.
+  - Sorotan kata aktif (*active match*) ditandai dengan animasi denyut bercahaya (*pulsing glow effect*) dan otomatis digulirkan ke tengah pandangan (*scroll into view*).
+  - Kontrol navigasi **▲ Prev** dan **▼ Next** memudahkan siswa melompat dari satu kemunculan kata ke kemunculan berikutnya secara berurutan.
 
 ---
+
 
 
 ## 🏗️ Tumpukan Teknologi (*Tech Stack*)

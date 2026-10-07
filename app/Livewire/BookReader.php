@@ -27,6 +27,9 @@ class BookReader extends Component
     public string $viewMode = 'flipbook'; // 'flipbook' or 'focus'
     public int $activeQuizChapterId = 0;
     public string $activeHighlightColor = 'yellow';
+    public string $searchKeyword = '';
+    public bool $isSearchModalOpen = false;
+    public array $searchResults = [];
 
     public function mount(Book $book, ?Chapter $chapter = null, ?int $page = null)
     {
@@ -202,6 +205,103 @@ class BookReader extends Component
     public function toggleSidebar()
     {
         $this->isSidebarOpen = ! $this->isSidebarOpen;
+    }
+
+    public function toggleSearchModal()
+    {
+        $this->isSearchModalOpen = ! $this->isSearchModalOpen;
+        if (! $this->isSearchModalOpen) {
+            $this->searchKeyword = '';
+            $this->searchResults = [];
+            $this->dispatch('clear-inbook-search');
+        }
+    }
+
+    public function updatedSearchKeyword($value)
+    {
+        $this->searchInBook($value);
+    }
+
+    public function searchInBook(?string $keyword = null): array
+    {
+        $query = trim($keyword ?? $this->searchKeyword);
+        if (mb_strlen($query) < 2) {
+            $this->searchResults = [];
+            return [
+                'query' => $query,
+                'total_matches' => 0,
+                'results' => [],
+            ];
+        }
+
+        $results = [];
+        $totalMatches = 0;
+
+        foreach ($this->book->chapters as $chapter) {
+            foreach ($chapter->pages as $page) {
+                $cleanContent = strip_tags(html_entity_decode($page->content ?? ''));
+                $searchContent = ($page->title ? $page->title . ' ' : '') . $cleanContent;
+
+                $count = mb_substr_count(mb_strtolower($searchContent), mb_strtolower($query));
+                if ($count > 0) {
+                    $totalMatches += $count;
+                    $snippet = $this->generateSnippet($searchContent, $query);
+
+                    $results[] = [
+                        'chapter_id' => $chapter->id,
+                        'chapter_title' => $chapter->title,
+                        'chapter_number' => $chapter->chapter_number,
+                        'page_id' => $page->id,
+                        'page_number' => $page->page_number,
+                        'page_title' => $page->title ?: 'Halaman ' . $page->page_number,
+                        'matches_count' => $count,
+                        'snippet' => $snippet,
+                    ];
+                }
+            }
+        }
+
+        $this->searchResults = $results;
+        return [
+            'query' => $query,
+            'total_matches' => $totalMatches,
+            'results' => $results,
+        ];
+    }
+
+    protected function generateSnippet(string $text, string $query, int $radius = 60): string
+    {
+        $pos = mb_stripos($text, $query);
+        if ($pos === false) {
+            return e(mb_substr($text, 0, 120)) . '...';
+        }
+
+        $start = max(0, $pos - $radius);
+        $length = mb_strlen($query) + ($radius * 2);
+        $rawExcerpt = mb_substr($text, $start, $length);
+
+        $prefix = $start > 0 ? '...' : '';
+        $suffix = ($start + $length) < mb_strlen($text) ? '...' : '';
+
+        $escaped = e($rawExcerpt);
+        $highlighted = preg_replace('/(' . preg_quote($query, '/') . ')/iu', '<mark class="snippet-highlight">$1</mark>', $escaped);
+
+        return $prefix . $highlighted . $suffix;
+    }
+
+    public function jumpToPageAndHighlight(int $pageId, ?string $keyword = null)
+    {
+        $targetChapter = $this->book->chapters->first(function ($c) use ($pageId) {
+            return $c->pages->contains('id', $pageId);
+        });
+
+        if ($targetChapter) {
+            $this->currentChapter = $targetChapter;
+            $this->selectPage($pageId);
+        }
+
+        $searchWord = $keyword ?? $this->searchKeyword;
+        $this->dispatch('highlight-search-keyword', pageId: $pageId, keyword: $searchWord);
     }
 
     protected function updateReadingProgress()

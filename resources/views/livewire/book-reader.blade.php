@@ -40,7 +40,29 @@
         // Total sekarang = $currentIndexTracker + 1 (untuk cover belakang)
         $totalExpected = $currentIndexTracker + 1;
         $needsFillerPage = ($totalExpected % 2 !== 0);
+
+        // Siapkan indeks pencarian teks buku untuk respon instan di peramban
+        $searchIndexData = [];
+        foreach ($book->chapters as $chap) {
+            foreach ($chap->pages as $p) {
+                $searchIndexData[] = [
+                    'chapter_id' => $chap->id,
+                    'chapter_title' => $chap->title,
+                    'chapter_number' => $chap->chapter_number,
+                    'page_id' => $p->id,
+                    'page_number' => $p->page_number,
+                    'page_title' => $p->title ?: 'Halaman ' . $p->page_number,
+                    'flip_index' => $pageIndices[$p->id] ?? null,
+                    'plain_text' => strip_tags(html_entity_decode(($p->title ? $p->title . ' ' : '') . ($p->content ?? ''))),
+                ];
+            }
+        }
     @endphp
+
+    <!-- Script Data Indeks Pencarian Buku -->
+    <script id="inbook-search-index-data" type="application/json">
+        {!! json_encode($searchIndexData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
+    </script>
 
     <!-- Sticky Top Header -->
     <header class="reader-header">
@@ -88,6 +110,20 @@
                     📄 Baca Fokus
                 </button>
             </div>
+
+            <!-- Pencarian Kata di Dalam Buku Button -->
+            <button 
+                type="button" 
+                class="btn-icon btn-inbook-search" 
+                id="btn-inbook-search-toggle"
+                onclick="window.BookSearch ? window.BookSearch.toggle() : null" 
+                title="Cari kata kunci di dalam buku (Ctrl+F)"
+                style="width: auto; padding: 0 12px; gap: 6px; font-size: 0.82rem; background: #f8fafc; border-color: #cbd5e1; color: #334155;"
+            >
+                <span>🔍</span>
+                <span>Cari Kata</span>
+                <kbd style="font-size: 0.68rem; background: #e2e8f0; padding: 1px 5px; border-radius: 4px; color: #64748b; font-family: inherit;">Ctrl+F</kbd>
+            </button>
 
             <!-- Stabilo & Catatan Toggle Button -->
             <button wire:click="toggleNotesDrawer" class="btn-icon btn-catatan-toggle {{ $this->annotations->count() > 0 ? 'has-notes' : '' }}" title="Buka Catatan & Stabilo Saya">
@@ -1082,6 +1118,59 @@
             @endif
         </main>
     </div>
+
+    <!-- Slide-over In-Book Search Drawer -->
+    <div id="inbook-search-overlay" class="inbook-search-overlay" style="display: none;" onclick="window.BookSearch ? window.BookSearch.close() : null"></div>
+    <aside id="inbook-search-drawer" class="inbook-search-drawer" aria-label="Pencarian Kata di Dalam Buku">
+        <div class="inbook-search-header">
+            <div class="inbook-search-header-title">
+                <span>🔍</span>
+                <span>Pencarian di Dalam Buku</span>
+            </div>
+            <button type="button" class="btn-icon" style="width: 32px; height: 32px;" onclick="window.BookSearch ? window.BookSearch.close() : null" title="Tutup Pencarian (Esc)">
+                ✕
+            </button>
+        </div>
+
+        <div class="inbook-search-input-box">
+            <div class="search-input-wrapper">
+                <span class="search-input-icon">🔍</span>
+                <input 
+                    type="text" 
+                    id="inbook-search-query-input" 
+                    class="inbook-search-input" 
+                    placeholder="Ketik kata atau istilah yang dicari..." 
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <button type="button" id="inbook-btn-clear-search" class="btn-clear-search" style="display: none;" onclick="window.BookSearch ? window.BookSearch.clear() : null" title="Hapus kata kunci">
+                    ✕
+                </button>
+            </div>
+
+            <div class="search-meta-bar">
+                <span id="inbook-search-count-label" class="search-count-badge">Ketik kata kunci untuk mencari</span>
+                <div class="search-nav-controls" id="inbook-search-nav-controls" style="display: none;">
+                    <button type="button" class="btn-search-nav" id="btn-inbook-prev-match" onclick="window.BookSearch ? window.BookSearch.prevMatch() : null" title="Sorotan Sebelumnya (Shift+Enter)">
+                        ▲ Prev
+                    </button>
+                    <button type="button" class="btn-search-nav" id="btn-inbook-next-match" onclick="window.BookSearch ? window.BookSearch.nextMatch() : null" title="Sorotan Selanjutnya (Enter)">
+                        ▼ Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="inbook-search-results-list" id="inbook-search-results-container">
+            <div class="search-empty-state">
+                <div style="font-size: 2.4rem; margin-bottom: 10px;">📖</div>
+                <div style="font-weight: 700; color: #475569; margin-bottom: 4px;">Pencarian Seluruh Halaman</div>
+                <p style="font-size: 0.8rem; line-height: 1.5; max-width: 280px; margin: 0 auto;">
+                    Ketik kata kunci (misal: "planet", "fotosintesis", rumus) untuk mencari di seluruh lembaran buku dan menandai lokasinya secara otomatis.
+                </p>
+            </div>
+        </div>
+    </aside>
 
     <!-- Slide-over Notes Drawer -->
     @if($isNotesDrawerOpen)

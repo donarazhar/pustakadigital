@@ -23,6 +23,7 @@
     <!-- Reader Styles & Offline Manager -->
     <link rel="stylesheet" href="{{ asset('css/reader.css') }}?v={{ file_exists(public_path('css/reader.css')) ? filemtime(public_path('css/reader.css')) : time() }}">
     <script src="{{ asset('js/offline-manager.js') }}"></script>
+    <script src="{{ asset('js/book-search.js') }}"></script>
     
     <!-- StPageFlip Library for 3D Interactive Flipbook -->
     <script src="{{ asset('js/page-flip.browser.min.js') }}"></script>

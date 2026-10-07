@@ -17,6 +17,7 @@ const CORE_ASSETS = [
     '/js/page-flip.browser.min.js',
     '/js/pdf.min.js',
     '/js/offline-manager.js',
+    '/js/book-search.js',
     '/images/logo.png',
     '/images/logo-hitam.png',
     '/images/default-book-cover.png',
