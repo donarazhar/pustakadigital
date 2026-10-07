@@ -235,10 +235,11 @@
                         @foreach($programs as $prog)
                             @php
                                 $isProgActive = request('program') == $prog->id;
+                                $progActiveColor = $prog->color ?: '#2563eb';
                             @endphp
                             <a href="{{ route('home', array_filter(['program' => $prog->id, 'grade' => request('grade'), 'type' => request('type'), 'q' => request('q')])) }}" 
                                class="filter-pill {{ $isProgActive ? 'active' : '' }}"
-                               style="{{ $isProgActive ? 'background: ' . ($prog->color ?: '#2563eb') . '; color: #ffffff; border-color: ' . ($prog->color ?: '#2563eb') . ';' : 'border-color: #e2e8f0;' }}">
+                               {!! $isProgActive ? 'style="background: ' . e($progActiveColor) . '; color: #ffffff; border-color: ' . e($progActiveColor) . ';"' : 'style="border-color: #e2e8f0;"' !!}>
                                 <span>{{ $prog->icon ?: '🎓' }}</span> {{ $prog->name }}
                             </a>
                         @endforeach
@@ -277,7 +278,10 @@
                             @endif
 
                             @if($book->program)
-                                <span class="badge-grade" style="background: {{ $book->program->color ?: '#3b82f6' }}; color: #ffffff; font-weight: 700;">
+                                @php
+                                    $coverProgColor = $book->program->color ?: '#3b82f6';
+                                @endphp
+                                <span class="badge-grade" {!! 'style="background: ' . e($coverProgColor) . '; color: #ffffff; font-weight: 700;"' !!}>
                                     {{ $book->program->icon }} {{ $book->program->name }}
                                 </span>
                             @endif
@@ -294,7 +298,10 @@
                             @endif
 
                             @if($book->program)
-                                <span style="font-size: 0.75rem; font-weight: 600; color: {{ $book->program->color ?: '#2563eb' }}; background: {{ $book->program->color ?: '#2563eb' }}15; padding: 2px 8px; border-radius: 9999px;">
+                                @php
+                                    $bodyProgColor = $book->program->color ?: '#2563eb';
+                                @endphp
+                                <span {!! 'style="font-size: 0.75rem; font-weight: 600; color: ' . e($bodyProgColor) . '; background: ' . e($bodyProgColor) . '18; padding: 2px 8px; border-radius: 9999px;"' !!}>
                                     {{ $book->program->icon }} {{ $book->program->name }}
                                 </span>
                             @endif
