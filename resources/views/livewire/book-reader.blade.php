@@ -1037,7 +1037,7 @@
                 <div class="annotation-card" id="drawer-card-{{ $item->id }}">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $item->getColorHex() }}; border: 1px solid rgba(0,0,0,0.15);"></span>
+                            <span class="color-dot-swatch" {!! 'style="background-color: ' . $item->getColorHex() . ';"' !!}></span>
                             <span style="font-size: 0.75rem; font-weight: 700; color: #475569;">
                                 @if($item->chapter)
                                     Bab {{ $item->chapter->chapter_number }}
@@ -1053,7 +1053,7 @@
                     </div>
 
                     @if($item->highlighted_text)
-                        <blockquote class="annotation-quote" style="border-left: 3px solid {{ $item->getColorHex() }}; background: rgba(0,0,0,0.02);">
+                        <blockquote class="annotation-quote" {!! 'style="border-left: 3px solid ' . $item->getColorHex() . '; background: rgba(0,0,0,0.02);"' !!}>
                             "{{ $item->highlighted_text }}"
                         </blockquote>
                     @endif
@@ -1066,7 +1066,7 @@
 
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f1f5f9;">
                         @if($item->page)
-                            <button onclick="window.jumpToPage({{ $item->page_id }});" style="background: none; border: none; color: #4f46e5; font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 0;">
+                            <button type="button" data-jump-page="{{ $item->page_id }}" onclick="window.jumpToPage(Number(this.dataset.jumpPage))" style="background: none; border: none; color: #4f46e5; font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 0;">
                                 Buka Halaman ↗
                             </button>
                         @else
@@ -1121,7 +1121,7 @@
     </div>
 
     <!-- Quick Sticky Note Modal Composer -->
-    <div id="note-modal" class="note-modal-backdrop" style="display: none;">
+    <div id="note-modal" class="note-modal-backdrop" data-current-page-id="{{ optional($currentPage)->id ?? '' }}" data-current-chapter-id="{{ optional($currentChapter)->id ?? '' }}" style="display: none;">
         <div class="note-modal-card">
             <div style="padding: 18px 22px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
                 <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0;">📌 Catatan & Rangkuman Siswa</h3>
@@ -1181,6 +1181,10 @@
         ])) !!}
     </script>
 
+    <script id="flip-indices-data" type="application/json">
+        {!! json_encode($pageIndices ?? []) !!}
+    </script>
+
     <!-- Script Engine for Annotations & Interactive Reader -->
     <script>
         (function () {
@@ -1193,7 +1197,8 @@
             const highlightPopup = document.getElementById('highlight-popup');
             const noteModal = document.getElementById('note-modal');
 
-            window.pageFlipIndexMapping = @json($pageIndices ?? []);
+            const flipDataEl = document.getElementById('flip-indices-data');
+            window.pageFlipIndexMapping = flipDataEl ? JSON.parse(flipDataEl.textContent || '{}') : {};
 
             function getLivewire() {
                 if (window.Livewire) {
@@ -1326,8 +1331,9 @@
                             showToast('Catatan & stabilo berhasil disimpan! 📝');
                         });
                 } else {
-                    const fallbackPageId = selectedPageId || {{ optional($currentPage)->id ?: 'null' }};
-                    const fallbackChapId = selectedChapterId || {{ optional($currentChapter)->id ?: 'null' }};
+                    const modalEl = document.getElementById('note-modal');
+                    const fallbackPageId = selectedPageId || (modalEl && modalEl.dataset.currentPageId ? parseInt(modalEl.dataset.currentPageId, 10) : null);
+                    const fallbackChapId = selectedChapterId || (modalEl && modalEl.dataset.currentChapterId ? parseInt(modalEl.dataset.currentChapterId, 10) : null);
                     wire.call('saveStickyNote', fallbackPageId, fallbackChapId, note, color)
                         .then(() => {
                             window.closeNoteModal();
@@ -1535,7 +1541,9 @@
                     return;
                 }
 
-                let summary = `# 📖 Rangkuman & Catatan Buku: {{ addslashes($book->title) }}\n\n`;
+                const bookHeader = document.querySelector('.reader-header-title');
+                const bookTitleText = bookHeader ? bookHeader.textContent.trim() : 'Buku Digital';
+                let summary = '# 📖 Rangkuman & Catatan Buku: ' + bookTitleText + '\n\n';
                 cards.forEach((card, idx) => {
                     const quote = card.querySelector('.annotation-quote');
                     const note = card.querySelector('.annotation-note-box');

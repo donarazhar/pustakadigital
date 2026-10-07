@@ -1,13 +1,17 @@
 @php
     /** @var \App\Models\StudentBookAnnotation $annotation */
+    $hex = $annotation->getColorHex();
+    $colorLabel = ucfirst($annotation->color);
+    $dotStyle = 'style="background-color: ' . $hex . '; border: 1px solid rgba(0,0,0,0.2);"';
+    $quoteStyle = 'style="border-left-color: ' . $hex . '; background-color: rgba(0,0,0,0.03);"';
 @endphp
 <div class="space-y-4">
     <!-- Header Lokasi & Warna -->
     <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
         <div class="flex items-center gap-2">
-            <span class="inline-block w-3.5 h-3.5 rounded-full" style="background-color: {{ $annotation->getColorHex() }}; border: 1px solid rgba(0,0,0,0.2);"></span>
+            <span class="inline-block w-3.5 h-3.5 rounded-full" {!! $dotStyle !!}></span>
             <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Stabilo {{ ucfirst($annotation->color) }}
+                Stabilo {{ $colorLabel }}
             </span>
         </div>
         <span class="text-xs text-gray-400">
@@ -19,7 +23,7 @@
     @if($annotation->highlighted_text)
         <div>
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Kutipan Teks yang Ditandai:</span>
-            <div class="p-3.5 rounded-xl text-sm italic font-serif leading-relaxed border-l-4" style="<?php echo 'border-left-color: ' . $annotation->getColorHex() . '; background-color: rgba(0,0,0,0.03);'; ?>">
+            <div class="p-3.5 rounded-xl text-sm italic font-serif leading-relaxed border-l-4" {!! $quoteStyle !!}>
                 "{{ $annotation->highlighted_text }}"
             </div>
         </div>
@@ -50,3 +54,4 @@
         </span>
     </div>
 </div>
+

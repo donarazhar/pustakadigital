@@ -1136,6 +1136,14 @@ body:fullscreen .flipbook-theater, body:-webkit-full-screen .flipbook-theater {
     border-color: #ffffff;
 }
 
+.color-dot-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
 .btn-toolbar-action {
     display: flex;
     align-items: center;
