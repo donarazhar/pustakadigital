@@ -9,11 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function (Request $request) {
-    $query = Book::with(['grade', 'subject', 'category', 'chapters'])
+    $query = Book::with(['grade', 'program', 'subject', 'category', 'chapters'])
         ->where('is_published', true);
 
     if ($request->filled('grade')) {
         $query->where('grade_id', $request->grade);
+    }
+
+    if ($request->filled('program')) {
+        $query->where('program_id', $request->program);
     }
 
     if ($request->filled('subject')) {
@@ -42,6 +46,7 @@ Route::get('/', function (Request $request) {
 
     $books = $query->latest()->get();
     $grades = Grade::where('is_active', true)->orderBy('order')->get();
+    $programs = \App\Models\SchoolProgram::where('is_active', true)->get();
     $subjects = Subject::all();
 
     $stats = [
@@ -52,7 +57,7 @@ Route::get('/', function (Request $request) {
         'pdf_books' => Book::where('is_published', true)->where('book_type', 'pdf')->count(),
     ];
 
-    return view('welcome', compact('books', 'grades', 'subjects', 'stats'));
+    return view('welcome', compact('books', 'grades', 'programs', 'subjects', 'stats'));
 })->name('home');
 
 Route::view('/offline', 'offline')->name('offline');

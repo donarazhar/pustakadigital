@@ -34,6 +34,13 @@ class BukuTable
                     ->color('info')
                     ->sortable(),
 
+                TextColumn::make('program.name')
+                    ->label('Program')
+                    ->badge()
+                    ->placeholder('Semua Program')
+                    ->color('primary')
+                    ->sortable(),
+
                 TextColumn::make('subject.name')
                     ->label('Mata Pelajaran')
                     ->badge()
@@ -61,6 +68,10 @@ class BukuTable
                 SelectFilter::make('grade_id')
                     ->label('Filter Jenjang/Kelas')
                     ->relationship('grade', 'name'),
+
+                SelectFilter::make('program_id')
+                    ->label('Filter Program')
+                    ->relationship('program', 'name'),
 
                 SelectFilter::make('subject_id')
                     ->label('Filter Mata Pelajaran')

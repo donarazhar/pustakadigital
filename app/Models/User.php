@@ -21,6 +21,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'role', // 'admin', 'teacher', 'student'
         'grade_id',
+        'program_id',
         'avatar',
         'reading_streak_days',
         'longest_streak_days',
@@ -78,6 +79,27 @@ class User extends Authenticatable implements FilamentUser
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class);
+    }
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(SchoolProgram::class, 'program_id');
+    }
+
+    /**
+     * Label akademik lengkap siswa (misal: "Kelas 4 SD • Program Bilingual").
+     */
+    public function getAcademicBadge(): string
+    {
+        $parts = [];
+        if ($this->grade) {
+            $parts[] = $this->grade->name;
+        }
+        if ($this->program) {
+            $parts[] = ($this->program->icon ? $this->program->icon . ' ' : '') . $this->program->name;
+        }
+
+        return ! empty($parts) ? implode(' • ', $parts) : 'Siswa Sekolah';
     }
 
     public function readingLogs(): HasMany

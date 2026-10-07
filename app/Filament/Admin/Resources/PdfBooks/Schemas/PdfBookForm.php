@@ -60,7 +60,7 @@ class PdfBookForm
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
 
-                        Grid::make(3)
+                        Grid::make(4)
                             ->schema([
                                 Select::make('grade_id')
                                     ->label('Jenjang / Kelas')
@@ -68,6 +68,13 @@ class PdfBookForm
                                     ->searchable()
                                     ->preload()
                                     ->required(),
+
+                                Select::make('program_id')
+                                    ->label('Program Belajar')
+                                    ->relationship('program', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->placeholder('Umum (Semua Program)'),
 
                                 Select::make('subject_id')
                                     ->label('Mata Pelajaran')

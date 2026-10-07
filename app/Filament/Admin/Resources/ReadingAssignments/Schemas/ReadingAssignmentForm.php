@@ -88,12 +88,20 @@ class ReadingAssignmentForm
                 Section::make('Sasaran Kelas & Siswa')
                     ->description('Pilih jenjang kelas atau centang langsung siswa yang ditugaskan.')
                     ->schema([
-                        Select::make('grade_id')
-                            ->label('Filter Jenjang / Kelas')
-                            ->relationship('grade', 'name')
-                            ->placeholder('Semua Kelas (atau pilih untuk menyaring daftar siswa di bawah)')
-                            ->live()
-                            ->columnSpanFull(),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('grade_id')
+                                    ->label('Filter Jenjang / Kelas')
+                                    ->relationship('grade', 'name')
+                                    ->placeholder('Semua Kelas')
+                                    ->live(),
+
+                                Select::make('program_id')
+                                    ->label('Filter Program Sekolah')
+                                    ->relationship('program', 'name')
+                                    ->placeholder('Semua Program (Bilingual, Tahfizh, dll.)')
+                                    ->live(),
+                            ]),
 
                         CheckboxList::make('students')
                             ->label('Daftar Siswa yang Ditugaskan')
@@ -101,6 +109,9 @@ class ReadingAssignmentForm
                                 $query->where('role', 'student');
                                 if ($gradeId = $get('grade_id')) {
                                     $query->where('grade_id', $gradeId);
+                                }
+                                if ($programId = $get('program_id')) {
+                                    $query->where('program_id', $programId);
                                 }
                                 return $query->orderBy('name');
                             })

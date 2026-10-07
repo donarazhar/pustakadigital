@@ -25,6 +25,7 @@ class Book extends Model
         'pdf_file',
         'description',
         'grade_id',
+        'program_id',
         'subject_id',
         'category_id',
         'is_published',
@@ -53,6 +54,11 @@ class Book extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class);
+    }
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(SchoolProgram::class, 'program_id');
     }
 
     public function subject(): BelongsTo

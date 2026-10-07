@@ -115,9 +115,25 @@ graph TD
   - Sorotan kata aktif (*active match*) ditandai dengan animasi denyut bercahaya (*pulsing glow effect*) dan otomatis digulirkan ke tengah pandangan (*scroll into view*).
   - Kontrol navigasi **▲ Prev** dan **▼ Next** memudahkan siswa melompat dari satu kemunculan kata ke kemunculan berikutnya secara berurutan.
 
+### 10. 🎓 Struktur Jenjang, Kelas & Program Sekolah (Bilingual, Tahfizh, Reguler, STEM)
+- **Arsitektur Akademik Berbasis Peminatan/Jalur Belajar**:
+  - Sekolah tidak hanya dibagi berdasarkan jenjang (SD, SMP, SMA/SMK) dan tingkat kelas (Kelas 1–12), melainkan juga memiliki **Program Khusus** yang masing-masing memiliki fokus kurikulum, murid, dan mata pelajaran tersendiri:
+    - 🌍 **Program Bilingual (Cambridge)**: Pengantar dwibahasa (Inggris & Indonesia), materi *Cambridge Primary Science*, *English Language Arts*, dll.
+    - 🕌 **Program Tahfizh Al-Qur'an**: Program hafalan & tahsin Juz 30, Bahasa Arab dasar, serta materi adab islami terstruktur.
+    - 🏫 **Program Reguler**: Kurikulum standar nasional terpadu.
+    - 🔬 **Program Sains & Riset (STEM)**: Eksperimen terapan, robotika & koding junior, dan matematika lanjut.
+- **Dukungan Mata Pelajaran Umum vs Spesifik Program**:
+  - Mata pelajaran umum (misal: Matematika, Bahasa Indonesia, Pendidikan Pancasila) dapat diakses oleh semua program (`program_id = null`).
+  - Mata pelajaran khusus terhubung langsung ke program terkait sehingga kurikulum belajar siswa lebih terarah dan relevan.
+- **Relasi Murid & Lencana Akademik**:
+  - Profil siswa terikat pada Kelas (1–12) dan Program Sekolah.
+  - Dasbor dan kartu profil siswa menampilkan lencana akademik otomatis (contoh: `Kelas 4 SD • 🌍 Bilingual`).
+- **Penyaringan Katalog Publik & Filter Program**:
+  - Pengunjung dan siswa dapat menyaring katalog buku berdasarkan **Jenjang Kelas**, **Format Buku (3D / PDF)**, dan **Program Sekolah (Semua / Bilingual / Tahfizh / Reguler)** secara simultan dengan URL query yang persisten.
+- **Penugasan Membaca Bertarget Program**:
+  - Guru dapat memberikan tugas membaca yang menargetkan siswa pada program sekolah tertentu (misal: tugas bacaan bahasa Inggris hanya untuk murid program Bilingual).
+
 ---
-
-
 
 ## 🏗️ Tumpukan Teknologi (*Tech Stack*)
 
@@ -135,15 +151,16 @@ graph TD
 
 | Tabel | Deskripsi |
 |---|---|
+| `school_programs` | Master program sekolah/jalur peminatan (Reguler, Bilingual, Tahfizh, STEM) lengkap dengan kode, ikon, dan warna tema. |
 | `grades` | Jenjang tingkatan kelas (e.g. Kelas 1 SD s.d. Kelas 12 SMA). |
-| `subjects` | Mata pelajaran sekolah (e.g. IPA, Matematika, Bahasa Indonesia). |
+| `subjects` | Mata pelajaran sekolah (umum atau terikat pada `program_id` dan `level`). |
 | `categories` | Kategori bahan pustaka (e.g. Buku Teks Utama, Pengayaan, Ensiklopedia). |
-| `books` | Data pokok buku digital (judul, ISBN, penulis, tipe 3D/PDF, sampul). |
+| `books` | Data pokok buku digital (judul, ISBN, penulis, tipe 3D/PDF, sampul, `grade_id`, `program_id`). |
 | `chapters` | Bab dan urutan materi pembelajaran dalam buku. |
 | `pages` | Halaman interaktif (isi materi, audio MP3, video, gambar). |
 | `quizzes` | Evaluasi bab dengan konfigurasi passing score dan durasi. |
 | `quiz_questions` & `quiz_options` | Bank butir soal dan opsi pilihan jawaban kuis. |
-| `reading_assignments` | Penugasan membaca oleh guru dengan tenggat waktu. |
+| `reading_assignments` | Penugasan membaca oleh guru dengan filter kelas dan program sekolah. |
 | `reading_assignment_students` | Relasi penugasan ke siswa dengan progres persentase baca. |
 | `student_book_annotations` | Stabilo teks terpilih, catatan rangkuman, dan warna penanda. |
 | `student_reading_logs` | Catatan halaman terakhir dan persentase keterbacaan siswa. |
@@ -209,11 +226,13 @@ Aplikasi siap diakses melalui peramban web pada alamat:
 
 Setelah menjalankan seeder (`php artisan db:seed`), akun demo berikut siap digunakan:
 
-| Peran (Role) | Email | Kata Sandi | Halaman Akses |
+| Peran (Role) | Email | Kata Sandi | Deskripsi Program & Akses |
 |---|---|---|---|
-| **Administrator** | `admin@sekolah.id` | `password` | `/admin` |
-| **Guru / Pendidik** | `guru@sekolah.id` | `password` | `/admin` |
-| **Siswa / Pelajar** | `siswa@sekolah.id` | `password` | `/siswa` |
+| **Administrator** | `admin@sekolah.id` | `password` | Pengelola sistem & kurikulum (`/admin`) |
+| **Guru / Pendidik** | `guru@sekolah.id` | `password` | Penugasan & rekapitulasi nilai (`/admin`) |
+| **Siswa Bilingual** | `siswa@sekolah.id` | `password` | Ananda Putri (Kelas 4 SD • Bilingual) (`/siswa`) |
+| **Siswa Tahfizh** | `siswa.tahfizh@sekolah.id` | `password` | Ahmad Fauzan (Kelas 4 SD • Tahfizh) (`/siswa`) |
+| **Siswa Reguler** | `siswa.reguler@sekolah.id` | `password` | Siti Sarah (Kelas 4 SD • Reguler) (`/siswa`) |
 
 ---
 
@@ -223,7 +242,7 @@ Aplikasi dilengkapi dengan suite pengujian otomatis fitur berbasis PHPUnit / Pes
 ```bash
 php artisan test
 ```
-*Status Uji: **17 passed (39 assertions, 100% green)*** mencakup pengujian pembaca buku, proteksi keamanan kuis, alur tugas membaca guru, serta stabilo dan catatan digital siswa.
+*Status Uji: **45 passed (181 assertions, 100% green)*** mencakup pengujian pembaca buku 3D & PDF, proteksi kuis, alur tugas membaca, stabilo & catatan mandiri, gamifikasi & lencana literasi, TTS AI, PWA & mode offline, in-book search, serta struktur jenjang, kelas, dan program sekolah.
 
 ---
 

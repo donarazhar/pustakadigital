@@ -10,6 +10,7 @@ use App\Models\Page;
 use App\Models\Quiz;
 use App\Models\QuizOption;
 use App\Models\QuizQuestion;
+use App\Models\SchoolProgram;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -59,7 +60,52 @@ class DatabaseSeeder extends Seeder
             $grades[$g['name']] = Grade::firstOrCreate(['name' => $g['name']], $g);
         }
 
-        // Akun Siswa (Kelas 4 SD)
+        // 2.5 Data Program Sekolah (Peminatan / Jalur Belajar)
+        $programsData = [
+            [
+                'name' => 'Program Reguler',
+                'code' => 'REG',
+                'level' => 'ALL',
+                'icon' => '🏫',
+                'color' => '#3b82f6',
+                'description' => 'Program kurikulum standar nasional terpadu.',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Program Bilingual (Cambridge)',
+                'code' => 'BIL',
+                'level' => 'ALL',
+                'icon' => '🌍',
+                'color' => '#0284c7',
+                'description' => 'Program dwibahasa (Inggris & Indonesia) dengan standar kurikulum internasional Cambridge.',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Program Tahfizh Al-Qur\'an',
+                'code' => 'THF',
+                'level' => 'ALL',
+                'icon' => '🕌',
+                'color' => '#059669',
+                'description' => 'Program intensif hafalan Al-Qur\'an, tajwid, dan adab islami terstruktur.',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Program Sains & Riset (STEM)',
+                'code' => 'STEM',
+                'level' => 'ALL',
+                'icon' => '🔬',
+                'color' => '#7c3aed',
+                'description' => 'Program pengayaan sains terapan, teknologi, rekayasa, dan matematika berbasis riset.',
+                'is_active' => true,
+            ],
+        ];
+
+        $programs = [];
+        foreach ($programsData as $p) {
+            $programs[$p['code']] = SchoolProgram::firstOrCreate(['code' => $p['code']], $p);
+        }
+
+        // Akun Siswa (Kelas 4 SD - Bilingual)
         $siswa = User::firstOrCreate(
             ['email' => 'siswa@sekolah.id'],
             [
@@ -67,16 +113,54 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'student',
                 'grade_id' => $grades['Kelas 4 SD']->id,
+                'program_id' => $programs['BIL']->id,
+            ]
+        );
+        $siswa->update([
+            'grade_id' => $grades['Kelas 4 SD']->id,
+            'program_id' => $programs['BIL']->id,
+        ]);
+
+        // Akun Siswa Tahfizh (Kelas 4 SD - Tahfizh)
+        $siswaTahfizh = User::firstOrCreate(
+            ['email' => 'siswa.tahfizh@sekolah.id'],
+            [
+                'name' => 'Ahmad Fauzan',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $grades['Kelas 4 SD']->id,
+                'program_id' => $programs['THF']->id,
             ]
         );
 
-        // 3. Mata Pelajaran
+        // Akun Siswa Reguler (Kelas 4 SD - Reguler)
+        $siswaReguler = User::firstOrCreate(
+            ['email' => 'siswa.reguler@sekolah.id'],
+            [
+                'name' => 'Siti Sarah',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $grades['Kelas 4 SD']->id,
+                'program_id' => $programs['REG']->id,
+            ]
+        );
+
+        // 3. Mata Pelajaran (Umum & Spesifik Program)
         $subjectsData = [
-            ['name' => 'Ilmu Pengetahuan Alam (IPA)', 'code' => 'IPA', 'color' => '#10b981', 'description' => 'Mempelajari alam, sains, biologi, dan fisika dasar.'],
-            ['name' => 'Matematika', 'code' => 'MTK', 'color' => '#3b82f6', 'description' => 'Aritmatika, geometri, logika angka.'],
-            ['name' => 'Bahasa Indonesia', 'code' => 'BIND', 'color' => '#f59e0b', 'description' => 'Literasi, tata bahasa, dan cerita interaktif.'],
-            ['name' => 'Pendidikan Pancasila', 'code' => 'PPKN', 'color' => '#ef4444', 'description' => 'Kewarganegaraan dan nilai-nilai luhur bangsa.'],
-            ['name' => 'Bahasa Inggris', 'code' => 'ENG', 'color' => '#8b5cf6', 'description' => 'English for kids and teens.'],
+            // Mapel Umum (Bisa diakses semua program)
+            ['name' => 'Ilmu Pengetahuan Alam (IPA)', 'code' => 'IPA', 'level' => 'ALL', 'program_id' => null, 'color' => '#10b981', 'description' => 'Mempelajari alam, sains, biologi, dan fisika dasar.'],
+            ['name' => 'Matematika', 'code' => 'MTK', 'level' => 'ALL', 'program_id' => null, 'color' => '#3b82f6', 'description' => 'Aritmatika, geometri, logika angka.'],
+            ['name' => 'Bahasa Indonesia', 'code' => 'BIND', 'level' => 'ALL', 'program_id' => null, 'color' => '#f59e0b', 'description' => 'Literasi, tata bahasa, dan cerita interaktif.'],
+            ['name' => 'Pendidikan Pancasila', 'code' => 'PPKN', 'level' => 'ALL', 'program_id' => null, 'color' => '#ef4444', 'description' => 'Kewarganegaraan dan nilai-nilai luhur bangsa.'],
+            ['name' => 'Bahasa Inggris', 'code' => 'ENG', 'level' => 'ALL', 'program_id' => null, 'color' => '#8b5cf6', 'description' => 'English for kids and teens.'],
+            // Mapel Khusus Program Bilingual
+            ['name' => 'Cambridge Primary Science', 'code' => 'CAM-SCI', 'level' => 'SD', 'program_id' => $programs['BIL']->id, 'color' => '#0284c7', 'description' => 'Cambridge curriculum primary science in English.'],
+            ['name' => 'English Language Arts', 'code' => 'ELA', 'level' => 'SD', 'program_id' => $programs['BIL']->id, 'color' => '#06b6d4', 'description' => 'Reading comprehension, creative writing, and literature.'],
+            // Mapel Khusus Program Tahfizh
+            ['name' => 'Tahfizh & Tahsin Al-Qur\'an', 'code' => 'THF-QUR', 'level' => 'ALL', 'program_id' => $programs['THF']->id, 'color' => '#059669', 'description' => 'Hafalan Juz 30 dan hukum tajwid makharijul huruf.'],
+            ['name' => 'Bahasa Arab Dasar', 'code' => 'ARB', 'level' => 'ALL', 'program_id' => $programs['THF']->id, 'color' => '#10b981', 'description' => 'Kosakata dan percakapan bahasa Arab sehari-hari.'],
+            // Mapel Khusus Program Sains & Riset (STEM)
+            ['name' => 'Robotics & Coding Junior', 'code' => 'ROBO', 'level' => 'SD', 'program_id' => $programs['STEM']->id, 'color' => '#7c3aed', 'description' => 'Logika pemrograman visual dan eksperimen robotika sederhana.'],
         ];
 
         $subjects = [];

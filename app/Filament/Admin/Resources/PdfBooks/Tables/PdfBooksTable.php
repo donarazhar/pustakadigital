@@ -38,6 +38,13 @@ class PdfBooksTable
                     ->color('info')
                     ->sortable(),
 
+                TextColumn::make('program.name')
+                    ->label('Program')
+                    ->badge()
+                    ->color('primary')
+                    ->placeholder('Semua Program')
+                    ->sortable(),
+
                 TextColumn::make('subject.name')
                     ->label('Mata Pelajaran')
                     ->badge()
@@ -69,6 +76,10 @@ class PdfBooksTable
                 SelectFilter::make('grade_id')
                     ->label('Filter Jenjang/Kelas')
                     ->relationship('grade', 'name'),
+
+                SelectFilter::make('program_id')
+                    ->label('Filter Program')
+                    ->relationship('program', 'name'),
 
                 SelectFilter::make('subject_id')
                     ->label('Filter Mapel')

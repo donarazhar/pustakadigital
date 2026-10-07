@@ -42,6 +42,13 @@ class ReadingAssignmentsTable
                 TextColumn::make('grade.name')
                     ->label('Kelas')
                     ->badge()
+                    ->color('info')
+                    ->sortable(),
+
+                TextColumn::make('program.name')
+                    ->label('Program')
+                    ->badge()
+                    ->placeholder('Semua Program')
                     ->color('primary')
                     ->sortable(),
 
@@ -77,6 +84,10 @@ class ReadingAssignmentsTable
                 SelectFilter::make('grade_id')
                     ->label('Filter Kelas')
                     ->relationship('grade', 'name'),
+
+                SelectFilter::make('program_id')
+                    ->label('Filter Program')
+                    ->relationship('program', 'name'),
 
                 TernaryFilter::make('is_active')
                     ->label('Status Aktif'),

@@ -33,7 +33,7 @@ class UserForm
                                     ->maxLength(255),
                             ]),
 
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
                                 Select::make('role')
                                     ->label('Peran / Hak Akses')
@@ -47,10 +47,18 @@ class UserForm
                                     ->live(),
 
                                 Select::make('grade_id')
-                                    ->label('Jenjang / Kelas (Khusus Siswa)')
+                                    ->label('Tingkat Kelas (Khusus Siswa)')
                                     ->relationship('grade', 'name')
                                     ->searchable()
                                     ->preload()
+                                    ->visible(fn ($get) => $get('role') === 'student'),
+
+                                Select::make('program_id')
+                                    ->label('Program Sekolah (Khusus Siswa)')
+                                    ->relationship('program', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->placeholder('Pilih Program (Bilingual, Tahfizh, dll.)')
                                     ->visible(fn ($get) => $get('role') === 'student'),
                             ]),
 

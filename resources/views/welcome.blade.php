@@ -99,6 +99,9 @@
                 @if(request('type'))
                     <input type="hidden" name="type" value="{{ request('type') }}">
                 @endif
+                @if(request('program'))
+                    <input type="hidden" name="program" value="{{ request('program') }}">
+                @endif
 
                 <span style="font-size: 1.15rem; color: #94a3b8;">🔍</span>
                 <input 
@@ -171,46 +174,75 @@
 
     <!-- Main Catalog Section -->
     <section class="catalog-section" id="katalog">
-        <!-- Filter Bar -->
         <div class="filter-bar-card">
-            <div class="filter-group-left">
-                <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.05em;">
-                    Jenjang:
-                </span>
-                
-                <a href="{{ route('home', array_filter(['type' => request('type'), 'q' => request('q')])) }}" 
-                   class="filter-pill {{ !request('grade') ? 'active' : '' }}">
-                    Semua Jenjang
-                </a>
+            <div style="display: flex; flex-direction: column; width: 100%; gap: 14px;">
+                <!-- Baris 1: Jenjang & Format -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div class="filter-group-left">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Jenjang:
+                        </span>
+                        
+                        <a href="{{ route('home', array_filter(['program' => request('program'), 'type' => request('type'), 'q' => request('q')])) }}" 
+                           class="filter-pill {{ !request('grade') ? 'active' : '' }}">
+                            Semua Jenjang
+                        </a>
 
-                @foreach($grades as $grade)
-                    <a href="{{ route('home', array_filter(['grade' => $grade->id, 'type' => request('type'), 'q' => request('q')])) }}" 
-                       class="filter-pill {{ request('grade') == $grade->id ? 'active' : '' }}">
-                        {{ $grade->name }}
-                    </a>
-                @endforeach
-            </div>
+                        @foreach($grades as $grade)
+                            <a href="{{ route('home', array_filter(['grade' => $grade->id, 'program' => request('program'), 'type' => request('type'), 'q' => request('q')])) }}" 
+                               class="filter-pill {{ request('grade') == $grade->id ? 'active' : '' }}">
+                                {{ $grade->name }}
+                            </a>
+                        @endforeach
+                    </div>
 
-            <div class="filter-group-right">
-                <div class="format-segmented-control">
-                    <a href="{{ route('home', array_filter(['grade' => request('grade'), 'q' => request('q')])) }}" 
-                       class="format-btn {{ !request('type') ? 'active' : '' }}">
-                        Semua Format
-                    </a>
-                    <a href="{{ route('home', array_filter(['grade' => request('grade'), 'type' => 'interactive', 'q' => request('q')])) }}" 
-                       class="format-btn {{ request('type') === 'interactive' ? 'active' : '' }}">
-                        📖 Buku 3D
-                    </a>
-                    <a href="{{ route('home', array_filter(['grade' => request('grade'), 'type' => 'pdf', 'q' => request('q')])) }}" 
-                       class="format-btn {{ request('type') === 'pdf' ? 'active' : '' }}">
-                        📄 E-Book PDF
-                    </a>
+                    <div class="filter-group-right">
+                        <div class="format-segmented-control">
+                            <a href="{{ route('home', array_filter(['grade' => request('grade'), 'program' => request('program'), 'q' => request('q')])) }}" 
+                               class="format-btn {{ !request('type') ? 'active' : '' }}">
+                                Semua Format
+                            </a>
+                            <a href="{{ route('home', array_filter(['grade' => request('grade'), 'program' => request('program'), 'type' => 'interactive', 'q' => request('q')])) }}" 
+                               class="format-btn {{ request('type') === 'interactive' ? 'active' : '' }}">
+                                📖 Buku 3D
+                            </a>
+                            <a href="{{ route('home', array_filter(['grade' => request('grade'), 'program' => request('program'), 'type' => 'pdf', 'q' => request('q')])) }}" 
+                               class="format-btn {{ request('type') === 'pdf' ? 'active' : '' }}">
+                                📄 E-Book PDF
+                            </a>
+                        </div>
+
+                        @if(request('q') || request('grade') || request('program') || request('type'))
+                            <a href="{{ route('home') }}" class="filter-pill" style="color: #ef4444; border-color: #fecaca; background: #fef2f2;" title="Hapus Semua Filter">
+                                ✕ Reset Filter
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
-                @if(request('q') || request('grade') || request('type'))
-                    <a href="{{ route('home') }}" class="filter-pill" style="color: #ef4444; border-color: #fecaca; background: #fef2f2;" title="Hapus Semua Filter">
-                        ✕ Reset Filter
-                    </a>
+                <!-- Baris 2: Program Sekolah (Bilingual, Tahfizh, Reguler, STEM) -->
+                @if(isset($programs) && $programs->isNotEmpty())
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Program:
+                        </span>
+
+                        <a href="{{ route('home', array_filter(['grade' => request('grade'), 'type' => request('type'), 'q' => request('q')])) }}" 
+                           class="filter-pill {{ !request('program') ? 'active' : '' }}">
+                            ✨ Semua Program
+                        </a>
+
+                        @foreach($programs as $prog)
+                            @php
+                                $isProgActive = request('program') == $prog->id;
+                            @endphp
+                            <a href="{{ route('home', array_filter(['program' => $prog->id, 'grade' => request('grade'), 'type' => request('type'), 'q' => request('q')])) }}" 
+                               class="filter-pill {{ $isProgActive ? 'active' : '' }}"
+                               style="{{ $isProgActive ? 'background: ' . ($prog->color ?: '#2563eb') . '; color: #ffffff; border-color: ' . ($prog->color ?: '#2563eb') . ';' : 'border-color: #e2e8f0;' }}">
+                                <span>{{ $prog->icon ?: '🎓' }}</span> {{ $prog->name }}
+                            </a>
+                        @endforeach
+                    </div>
                 @endif
             </div>
         </div>
@@ -243,16 +275,31 @@
                             @if($book->grade)
                                 <span class="badge-grade">{{ $book->grade->name }}</span>
                             @endif
+
+                            @if($book->program)
+                                <span class="badge-grade" style="background: {{ $book->program->color ?: '#3b82f6' }}; color: #ffffff; font-weight: 700;">
+                                    {{ $book->program->icon }} {{ $book->program->name }}
+                                </span>
+                            @endif
                         </div>
                     </div>
 
                     <!-- Book Card Body -->
                     <div class="book-card-body">
-                        @if($book->subject)
-                            <div class="book-subject-tag">{{ $book->subject->name }}</div>
-                        @else
-                            <div class="book-subject-tag" style="color: #64748b;">Umum</div>
-                        @endif
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                            @if($book->subject)
+                                <div class="book-subject-tag">{{ $book->subject->name }}</div>
+                            @else
+                                <div class="book-subject-tag" style="color: #64748b;">Umum</div>
+                            @endif
+
+                            @if($book->program)
+                                <span style="font-size: 0.75rem; font-weight: 600; color: {{ $book->program->color ?: '#2563eb' }}; background: {{ $book->program->color ?: '#2563eb' }}15; padding: 2px 8px; border-radius: 9999px;">
+                                    {{ $book->program->icon }} {{ $book->program->name }}
+                                </span>
+                            @endif
+                        </div>
+
 
                         <h2 class="book-title" title="{{ $book->title }}">{{ $book->title }}</h2>
 

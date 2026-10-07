@@ -19,6 +19,7 @@ class ReadingAssignment extends Model
         'book_id',
         'target_chapter_id',
         'grade_id',
+        'program_id',
         'due_date',
         'is_active',
     ];
@@ -46,6 +47,11 @@ class ReadingAssignment extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class);
+    }
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(SchoolProgram::class, 'program_id');
     }
 
     public function assignmentStudents(): HasMany

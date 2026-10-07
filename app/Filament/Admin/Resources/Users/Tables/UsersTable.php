@@ -56,6 +56,12 @@ class UsersTable
                     ->color('gray')
                     ->placeholder('-'),
 
+                TextColumn::make('program.name')
+                    ->label('Program')
+                    ->badge()
+                    ->color('primary')
+                    ->placeholder('-'),
+
                 TextColumn::make('created_at')
                     ->label('Terdaftar')
                     ->dateTime('d M Y')
@@ -73,6 +79,9 @@ class UsersTable
                 SelectFilter::make('grade_id')
                     ->label('Filter Kelas')
                     ->relationship('grade', 'name'),
+                SelectFilter::make('program_id')
+                    ->label('Filter Program')
+                    ->relationship('program', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),
