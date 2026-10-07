@@ -95,6 +95,20 @@
                 <span>Catatan ({{ $this->annotations->count() }})</span>
             </button>
 
+            <!-- Simpan Offline Button -->
+            <button 
+                type="button" 
+                class="btn-icon btn-offline-save" 
+                id="btn-offline-save"
+                data-offline-book-id="{{ $book->id }}"
+                onclick="window.saveCurrentBookOffline()" 
+                title="Simpan buku ini ke tablet/HP agar bisa dibaca tanpa internet"
+                style="width: auto; padding: 0 12px; gap: 6px; font-size: 0.82rem; background: #f8fafc; border-color: #cbd5e1; color: #334155;"
+            >
+                <span>📥</span>
+                <span>Simpan Offline</span>
+            </button>
+
             @if($currentChapter && $currentChapter->quiz && $currentChapter->quiz->is_active)
                 <button wire:click="{{ $showQuiz ? 'closeQuiz' : 'openQuiz' }}" class="btn-icon" style="width: auto; padding: 0 14px; gap: 6px; font-size: 0.82rem;" title="Kuis Pemahaman Bab">
                     <span>💡</span>
@@ -119,6 +133,12 @@
             @endauth
         </div>
     </header>
+
+    <!-- Offline Mode Notice Banner -->
+    <div id="offline-network-banner" style="display: none; background: #fef3c7; border-bottom: 1px solid #fde68a; padding: 6px 20px; font-size: 0.8rem; font-weight: 700; color: #92400e; justify-content: center; align-items: center; gap: 8px;">
+        <span>📡</span>
+        <span>Mode Offline Aktif: Anda sedang membaca dari memori lokal perangkat tanpa kuota internet.</span>
+    </div>
 
     <!-- Reading Container -->
     <div class="reader-container {{ $viewMode === 'flipbook' ? 'flipbook-layout' : '' }}">
@@ -2173,6 +2193,68 @@
                 window.AITTS.init();
             }
         })();
+    </script>
+
+    <!-- Offline Book Persistence Data & Script -->
+    @php
+        $offlinePayload = [
+            'id' => $book->id,
+            'title' => $book->title,
+            'slug' => $book->slug,
+            'author' => $book->author ?: 'Tim Literasi Sekolah',
+            'cover_url' => $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/default-book-cover.png'),
+            'total_chapters' => $book->chapters->count(),
+            'chapters' => $book->chapters->map(function($chap) {
+                return [
+                    'id' => $chap->id,
+                    'chapter_number' => $chap->chapter_number,
+                    'title' => $chap->title,
+                    'pages' => $chap->pages->map(function($p) {
+                        return [
+                            'id' => $p->id,
+                            'page_number' => $p->page_number,
+                            'title' => $p->title,
+                            'featured_image_url' => $p->featured_image ? asset('storage/' . $p->featured_image) : null,
+                            'audio_narration_url' => $p->audio_narration_url ?: null,
+                        ];
+                    })->values()->all(),
+                ];
+            })->values()->all(),
+        ];
+    @endphp
+    <script id="offline-book-payload" type="application/json">
+        {!! json_encode($offlinePayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
+    </script>
+    <script>
+        window.saveCurrentBookOffline = async function () {
+            if (!window.OfflineManager) {
+                alert('Penyimpanan offline belum didukung oleh browser ini.');
+                return;
+            }
+
+            const payloadEl = document.getElementById('offline-book-payload');
+            if (!payloadEl) {
+                console.error('Payload buku offline tidak ditemukan.');
+                return;
+            }
+
+            try {
+                const bookData = JSON.parse(payloadEl.textContent);
+                bookData.read_url = window.location.pathname;
+
+                const isSaved = await window.OfflineManager.isBookSaved(bookData.id);
+                if (isSaved) {
+                    if (confirm('Buku ini sudah tersimpan di memori perangkat. Hapus buku ini dari memori lokal untuk menghemat kapasitas?')) {
+                        await window.OfflineManager.removeBook(bookData.id);
+                    }
+                    return;
+                }
+
+                await window.OfflineManager.saveBook(bookData);
+            } catch (err) {
+                console.error('Gagal memproses data buku untuk offline:', err);
+            }
+        };
     </script>
 </div>
 

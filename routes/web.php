@@ -55,6 +55,8 @@ Route::get('/', function (Request $request) {
     return view('welcome', compact('books', 'grades', 'subjects', 'stats'));
 })->name('home');
 
+Route::view('/offline', 'offline')->name('offline');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/siswa/baca/{book:slug}', BookReader::class)->name('siswa.books.read');
     Route::get('/siswa/baca/{book:slug}/bab/{chapter}', BookReader::class)->name('siswa.books.read.chapter');

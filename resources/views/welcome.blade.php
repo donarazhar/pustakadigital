@@ -7,15 +7,32 @@
     <meta name="description" content="Perpustakaan digital sekolah berbasis Buku 3D Flipbook interaktif, narasi audio, dan kuis pemahaman materi untuk siswa dan guru.">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
+    <!-- PWA Web App Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pustaka Digital">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
     
-    <!-- Modern Bookshelf Styles -->
+    <!-- Modern Bookshelf Styles & Offline Manager -->
     <link rel="stylesheet" href="{{ asset('css/bookshelf.css') }}?v={{ file_exists(public_path('css/bookshelf.css')) ? filemtime(public_path('css/bookshelf.css')) : time() }}">
+    <script src="{{ asset('js/offline-manager.js') }}"></script>
 </head>
 <body>
+    <!-- Offline Connectivity Notice Banner -->
+    <div id="offline-network-banner" style="display: none; background: #fef3c7; border-bottom: 1px solid #fde68a; padding: 10px 20px; font-size: 0.82rem; font-weight: 700; color: #92400e; justify-content: center; align-items: center; gap: 8px;">
+        <span>📡</span>
+        <span>Mode Offline Aktif: Koneksi internet terputus, Anda membaca dari memori lokal.</span>
+        <a href="{{ route('offline') }}" style="color: #4f46e5; text-decoration: underline; margin-left: 8px;">Buka Rak Buku Offline →</a>
+    </div>
+
     <!-- Top Navigation Bar -->
     <nav class="site-nav">
         <a href="{{ route('home') }}" class="brand-wrapper" title="Beranda Pustaka Digital">
@@ -27,6 +44,11 @@
         </a>
 
         <div class="nav-actions">
+            <!-- PWA Install Button -->
+            <button type="button" class="btn-pwa-install" onclick="window.OfflineManager.promptInstall()" title="Pasang aplikasi di tablet atau HP siswa" style="display: none; align-items: center; gap: 6px; background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 7px 14px; border-radius: 9999px; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;">
+                <span>📱</span>
+                <span>Pasang Aplikasi</span>
+            </button>
             @auth
                 @if(auth()->user()->isStudent())
                     <a href="{{ url('/siswa') }}" class="btn-nav-siswa">

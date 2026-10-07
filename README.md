@@ -84,9 +84,27 @@ graph TD
   - Tombol kontrol lengkap: **Putar (Play)**, **Jeda (Pause)**, **Lanjutkan (Resume)**, dan **Berhenti (Stop)**.
   - Pengatur laju kecepatan bicara: `0.8x` (perlahan untuk siswa pemula), `1.0x` (normal), `1.25x`, hingga `1.5x`.
   - Animasi dinamis gelombang audio (*Voice Equalizer Wave*) yang bergerak hidup saat suara AI berbicara.
-- **Fitur Auto-Read Saat Membalik Halaman**: Opsi otomatisasi di dock bawah yang memungkinkan buku langsung dibacakan setiap kali siswa membalik ke lembaran berikutnya.
+### 8. 📱 Progressive Web App (PWA) & Mode Offline (IndexedDB)
+- **Instalasi Mandiri di Tablet/HP (Tanpa Perlu PlayStore)**:
+  - Didukung spesifikasi *Web App Manifest* (`manifest.json`) standar W3C dengan ikon multi-resolusi (72px hingga 512px).
+  - Siswa dan guru dapat memasang aplikasi langsung ke layar utama (*Home Screen*) tablet atau smartphone sekolah melalui tombol **"📲 Pasang Aplikasi"** di beranda.
+  - Berjalan dalam mode *standalone* tanpa bilah navigasi peramban (*browser chrome*), menghadirkan pengalaman aplikasi native yang imersif dan fokus belajar.
+  - *App Shortcuts* bawaan: Akses instan ke Rak Buku Utama, Portal Siswa, dan Papan Peringkat Literasi.
+- **Penyimpanan Buku Lokal Berkapasitas Tinggi (*IndexedDB Storage*)**:
+  - Tombol **"📥 Simpan Offline"** / **"✅ Tersimpan Offline"** tersemat langsung di bilah atas pembaca buku.
+  - Menyimpan seluruh struktur bab, lembaran halaman bacaan, metadata pengarang, serta ilustrasi materi ke dalam database lokal peramban (*`PustakaOfflineDB`*).
+  - Memori lokal dapat dikelola dengan mudah oleh siswa; buku yang telah selesai dipelajari dapat dihapus dari perangkat untuk menghemat ruang memori.
+- **Service Worker Cerdas & Caching Bertingkat (`sw.js`)**:
+  - *Pre-caching Core Shell*: Memuat *library* pembalik buku 3D (*StPageFlip*), PDF viewer, stylesheet, logo sekolah, dan skrip *offline-manager* seketika tanpa jeda tunggu (*instant launch*).
+  - *Stale-While-Revalidate*: Menyajikan aset lokal berkecepatan tinggi sambil memperbarui data di latar belakang saat terhubung ke internet.
+  - Pengecualian otomatis untuk sinkronisasi dinamis Livewire dan Panel Admin Filament agar data evaluasi tetap valid.
+- **Halaman Khusus Mode Offline (`/offline`) & Deteksi Jaringan Real-Time**:
+  - Banner peringatan dinamis (*Offline Network Banner*) otomatis muncul saat sinyal Wi-Fi/kuota internet terputus.
+  - Halaman khusus `/offline` menyajikan etalase semua buku yang telah diunduh ke memori lokal tablet, memungkinkan siswa melanjutkan kegiatan membaca di ruang kelas tanpa sinyal internet.
+  - Notifikasi Toast informatif otomatis memberitahukan saat koneksi internet kembali pulih (*auto-reconnect*).
 
 ---
+
 
 ## 🏗️ Tumpukan Teknologi (*Tech Stack*)
 
