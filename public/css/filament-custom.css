@@ -1,0 +1,66 @@
+/* ==========================================================================
+   Filament Admin Proportional Scale (85% Layout & Compact Spacing)
+   Menggunakan root rem scaling (font-size: 85%):
+   - Seluruh elemen (menu sidebar, navbar, tabel, form, kartu, badge, tombol)
+     terskala secara proporsional ke 85% tanpa terpotong.
+   - TIDAK merusak kalkulasi koordinat Floating UI / Popper pada JavaScript,
+     sehingga pop-up menu pengguna (user menu), dropdown action, filter, dan
+     tooltip menempel PAS dan PRESISI di samping ikon pemicunya tanpa menjauh!
+   ========================================================================== */
+
+/* 1. Skala dasar 85% untuk seluruh sistem pengukuran rem Tailwind di Filament */
+html.fi {
+    font-size: 85% !important; /* Standar 1rem = 13.6px (tepat 85% dari 16px) */
+}
+
+/* 2. Pastikan properti zoom dimatikan agar tidak mendistorsi posisi absolute/fixed dropdown */
+html.fi,
+body.fi-body {
+    zoom: normal !important;
+    transform: none !important;
+}
+
+/* 3. Dropdown Panel & User Menu: Menempel presisi, bayangan halus, dan ukuran proporsional */
+.fi-dropdown-panel {
+    font-size: 0.95rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.fi-user-menu {
+    position: relative;
+}
+
+/* 4. Optimasi lebar dan tinggi komponen agar pas di layar */
+.fi-topbar {
+    height: 3.5rem;
+}
+
+.fi-sidebar {
+    width: 17rem;
+}
+
+.fi-sidebar-item {
+    font-size: 0.92rem;
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+}
+
+/* 5. Tabel Data: Tampil lega, rapi, dan mudah dibaca */
+.fi-ta-table {
+    font-size: 0.9rem;
+}
+
+.fi-ta-header-cell,
+.fi-ta-cell {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+}
+
+/* 6. Dialog Modal dan Slide-over tetap proporsional */
+.fi-modal-window,
+.fi-slide-over-window {
+    max-height: 92vh;
+}
