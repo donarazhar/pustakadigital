@@ -22,6 +22,10 @@ class User extends Authenticatable implements FilamentUser
         'role', // 'admin', 'teacher', 'student'
         'grade_id',
         'avatar',
+        'reading_streak_days',
+        'longest_streak_days',
+        'last_read_date',
+        'literacy_points',
     ];
 
     protected $hidden = [
@@ -34,6 +38,10 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'reading_streak_days' => 'integer',
+            'longest_streak_days' => 'integer',
+            'last_read_date' => 'datetime',
+            'literacy_points' => 'integer',
         ];
     }
 
@@ -102,5 +110,29 @@ class User extends Authenticatable implements FilamentUser
     public function bookAnnotations(): HasMany
     {
         return $this->hasMany(StudentBookAnnotation::class);
+    }
+
+    public function badges(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot(['awarded_at', 'notes'])
+            ->withTimestamps();
+    }
+
+    public function userBadges(): HasMany
+    {
+        return $this->hasMany(UserBadge::class);
+    }
+
+    public function hasBadge(string $slug): bool
+    {
+        return $this->badges()->where('slug', $slug)->exists();
+    }
+
+    public function getLeaderboardRank(): int
+    {
+        return static::where('role', 'student')
+            ->where('literacy_points', '>', $this->literacy_points)
+            ->count() + 1;
     }
 }

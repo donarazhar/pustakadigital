@@ -55,6 +55,26 @@ graph TD
   - Tombol **📋 Salin Rangkuman** untuk menyalin semua catatan buku ke *clipboard* format Markdown.
 - **Manajemen Catatan di Panel Siswa (`/siswa/catatan-stabilo`)**: Halaman khusus untuk melihat seluruh kumpulan stabilo dan catatan rangkuman dari semua buku yang pernah dipelajari.
 
+### 6. 🏅 Lencana Literasi, Reading Streak & Papan Peringkat (Gamifikasi)
+- **Reading Streak Harian (🔥)**: Melacak konsistensi membaca harian siswa secara otomatis. Streak bertambah jika siswa membaca buku pada hari berikutnya tanpa jeda, menyimpan rekor terpanjang (*Longest Streak*), dan memberikan bonus Poin Literasi bertingkat.
+- **Sistem Lencana Otomatis (🏅)**: Pemberian lencana instan saat siswa memenuhi kriteria pencapaian belajar:
+  - 🌱 **Kutu Buku Pemula**: Membuka dan membaca buku digital pertama.
+  - 🔬 **Penjelajah Sains**: Menuntaskan seluruh materi buku bertopik IPA / Sains.
+  - ⚡ **Semangat 3 Hari**: Konsisten membaca selama 3 hari berturut-turut.
+  - 🔥 **Membaca 5 Hari Berturut-turut**: Mencapai streak membaca 5 hari tanpa jeda.
+  - 💯 **Juara Kuis 100**: Meraih nilai sempurna 100 pada kuis evaluasi materi.
+  - 🎯 **Ahli Evaluasi Tangkas**: Berhasil lulus minimal 3 evaluasi kuis bab.
+  - 📝 **Kolektor Catatan Literasi**: Menulis minimal 5 catatan rangkuman dan stabilo.
+  - 👑 **Pembaca Tamat**: Menyelesaikan membaca minimal 3 buku hingga 100%.
+- **Papan Peringkat Literasi (`/siswa/papan-peringkat`)**:
+  - Podium visual Top 3 (🥇 Juara 1 Emas, 🥈 Juara 2 Perak, 🥉 Juara 3 Perunggu).
+  - Filter jangkauan ranking: **Semua Siswa Sekolah** atau **Kelas Saya**.
+  - Sorotan baris khusus untuk siswa yang sedang login sehingga mereka mudah mengetahui posisinya di sekolah.
+- **Etalase Lencana (`/siswa/lencana-literasi`)**:
+  - Kartu lencana visual dengan status pita emas (*Telah Diraih*) atau abu-abu (*Terkunci*).
+  - Bar progres otomatis yang menunjukkan sejauh mana kriteria lencana telah dicapai siswa.
+- **Widget Dasbor Terintegrasi**: Statistik harian *Reading Streak 🔥* dan *Peringkat Literasi ⭐* langsung tampil di dasbor utama panel siswa.
+
 ---
 
 ## 🏗️ Tumpukan Teknologi (*Tech Stack*)
@@ -86,6 +106,8 @@ graph TD
 | `student_book_annotations` | Stabilo teks terpilih, catatan rangkuman, dan warna penanda. |
 | `student_reading_logs` | Catatan halaman terakhir dan persentase keterbacaan siswa. |
 | `student_quiz_attempts` | Lembar rekap hasil dan skor evaluasi kuis siswa. |
+| `badges` | Master data lencana pencapaian, kategori, kriteria, dan bonus poin. |
+| `user_badges` | Relasi perolehan lencana otomatis ke siswa beserta tanggal diraih. |
 
 ---
 

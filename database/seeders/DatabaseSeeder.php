@@ -256,5 +256,87 @@ class DatabaseSeeder extends Seeder
 
         QuizOption::firstOrCreate(['quiz_question_id' => $q3->id, 'option_text' => 'Benar', 'is_correct' => false, 'order' => 1]);
         QuizOption::firstOrCreate(['quiz_question_id' => $q3->id, 'option_text' => 'Salah (Matahari adalah Bintang)', 'is_correct' => true, 'order' => 2]);
+
+        // 6. Inisialisasi Lencana Literasi (Badges)
+        \App\Services\GamificationService::seedBadges();
+
+        // 7. Data Siswa Demo Tambahan untuk Papan Peringkat (Leaderboard)
+        $kelas4Id = $grades['Kelas 4 SD']->id;
+        $moreStudents = [
+            [
+                'email' => 'cantika@sekolah.id',
+                'name' => 'Cantika Dewi',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $kelas4Id,
+                'reading_streak_days' => 4,
+                'longest_streak_days' => 6,
+                'last_read_date' => now(),
+                'literacy_points' => 390,
+            ],
+            [
+                'email' => 'bima@sekolah.id',
+                'name' => 'Bima Wicaksono',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $kelas4Id,
+                'reading_streak_days' => 3,
+                'longest_streak_days' => 5,
+                'last_read_date' => now(),
+                'literacy_points' => 320,
+            ],
+            [
+                'email' => 'dimas@sekolah.id',
+                'name' => 'Dimas Pratama',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $kelas4Id,
+                'reading_streak_days' => 2,
+                'longest_streak_days' => 3,
+                'last_read_date' => now(),
+                'literacy_points' => 210,
+            ],
+            [
+                'email' => 'elis@sekolah.id',
+                'name' => 'Elis Rahmawati',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'grade_id' => $kelas4Id,
+                'reading_streak_days' => 1,
+                'longest_streak_days' => 2,
+                'last_read_date' => now(),
+                'literacy_points' => 120,
+            ],
+        ];
+
+        foreach ($moreStudents as $stData) {
+            User::firstOrCreate(['email' => $stData['email']], $stData);
+        }
+
+        // Berikan progres & lencana awal untuk siswa demo Ananda Putri
+        $ananda = User::where('email', 'siswa@sekolah.id')->first();
+        if ($ananda) {
+            $ananda->update([
+                'reading_streak_days' => 5,
+                'longest_streak_days' => 5,
+                'last_read_date' => now(),
+                'literacy_points' => 450,
+            ]);
+
+            // Berikan lencana awal
+            $kutuBuku = \App\Models\Badge::where('slug', 'kutu-buku-pemula')->first();
+            $streak3 = \App\Models\Badge::where('slug', 'semangat-3-hari')->first();
+            $streak5 = \App\Models\Badge::where('slug', 'membaca-5-hari-berturut-turut')->first();
+
+            if ($kutuBuku && ! $ananda->hasBadge($kutuBuku->slug)) {
+                $ananda->badges()->attach($kutuBuku->id, ['awarded_at' => now()->subDays(4)]);
+            }
+            if ($streak3 && ! $ananda->hasBadge($streak3->slug)) {
+                $ananda->badges()->attach($streak3->id, ['awarded_at' => now()->subDays(2)]);
+            }
+            if ($streak5 && ! $ananda->hasBadge($streak5->slug)) {
+                $ananda->badges()->attach($streak5->id, ['awarded_at' => now()]);
+            }
+        }
     }
 }

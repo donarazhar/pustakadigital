@@ -72,7 +72,7 @@ class InteractiveQuiz extends Component
         $this->isSubmitted = true;
 
         if (Auth::check()) {
-            StudentQuizAttempt::create([
+            $attempt = StudentQuizAttempt::create([
                 'user_id' => Auth::id(),
                 'quiz_id' => $this->quiz->id,
                 'score' => $this->finalScore,
@@ -81,6 +81,8 @@ class InteractiveQuiz extends Component
                 'is_passed' => $this->isPassed,
                 'submitted_at' => now(),
             ]);
+
+            app(\App\Services\GamificationService::class)->recordQuizCompleted(Auth::user(), $attempt);
         }
     }
 

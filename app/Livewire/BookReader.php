@@ -236,6 +236,8 @@ class BookReader extends Component
                 );
 
                 $this->syncAssignmentProgress($percent);
+
+                app(\App\Services\GamificationService::class)->recordReadingActivity(Auth::user(), $this->book);
             }
         }
     }
@@ -329,6 +331,8 @@ class BookReader extends Component
 
         $this->dispatch('annotation-saved', annotation: $annotation->toArray());
 
+        app(\App\Services\GamificationService::class)->recordAnnotationCreated(Auth::user());
+
         return $annotation->id;
     }
 
@@ -350,6 +354,8 @@ class BookReader extends Component
         ]);
 
         $this->dispatch('annotation-saved', annotation: $annotation->toArray());
+
+        app(\App\Services\GamificationService::class)->recordAnnotationCreated(Auth::user());
 
         return $annotation->id;
     }

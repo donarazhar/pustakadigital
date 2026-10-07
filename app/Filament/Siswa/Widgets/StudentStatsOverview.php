@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class StudentStatsOverview extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
+    protected static bool $isLazy = false;
 
     protected function getStats(): array
     {
@@ -31,11 +32,19 @@ class StudentStatsOverview extends StatsOverviewWidget
         $completedAssignments = (clone $assignedReadings)->where('status', 'completed')->count();
         $pendingAssignments = $totalAssignments - $completedAssignments;
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         return [
-            Stat::make('Buku Tersedia', $totalBooksAvailable)
-                ->description('Buku digital siap dibaca')
-                ->descriptionIcon('heroicon-m-book-open')
-                ->color('primary'),
+            Stat::make('Reading Streak', ($user->reading_streak_days ?? 0) . ' Hari 🔥')
+                ->description('Rekor: ' . ($user->longest_streak_days ?? 0) . ' hari berturut-turut')
+                ->descriptionIcon('heroicon-m-fire')
+                ->color('danger'),
+
+            Stat::make('Peringkat Literasi', '#' . $user->getLeaderboardRank() . ' • ' . $user->badges()->count() . ' 🏅')
+                ->description(number_format($user->literacy_points ?? 0) . ' Poin Literasi')
+                ->descriptionIcon('heroicon-m-trophy')
+                ->color('warning'),
 
             Stat::make('Tugas Membaca', $totalAssignments > 0 ? "{$completedAssignments} / {$totalAssignments}" : '0 Tugas')
                 ->description($totalAssignments > 0 ? ($pendingAssignments > 0 ? "{$pendingAssignments} tugas belum tuntas" : 'Semua tugas telah tuntas! 🎉') : 'Belum ada tugas membaca aktif')
@@ -46,11 +55,6 @@ class StudentStatsOverview extends StatsOverviewWidget
                 ->description("{$completedBooks} buku telah diselesaikan")
                 ->descriptionIcon('heroicon-m-bookmark')
                 ->color('success'),
-
-            Stat::make('Rata-rata Nilai Kuis', $totalQuizzesTaken > 0 ? "{$averageQuizScore}" : '-')
-                ->description($totalQuizzesTaken > 0 ? "Dari {$totalQuizzesTaken} evaluasi kuis" : 'Belum mengerjakan kuis')
-                ->descriptionIcon('heroicon-m-academic-cap')
-                ->color($averageQuizScore >= 75 ? 'success' : ($totalQuizzesTaken > 0 ? 'warning' : 'gray')),
         ];
     }
 }
