@@ -75,6 +75,17 @@ graph TD
   - Bar progres otomatis yang menunjukkan sejauh mana kriteria lencana telah dicapai siswa.
 - **Widget Dasbor Terintegrasi**: Statistik harian *Reading Streak 🔥* dan *Peringkat Literasi ⭐* langsung tampil di dasbor utama panel siswa.
 
+### 7. 🤖 Text-to-Speech (TTS) AI Otomatis & Karaoke Follow-Along
+- **Narasi Otomatis Berbahasa Indonesia Alami (`id-ID`)**: Untuk halaman buku yang belum memiliki berkas rekaman narator manual dari guru, sistem secara otomatis mengaktifkan modul pemutar AI TTS alami.
+- **Deteksi Karakter Suara Cerdas**: Mendeteksi dan memprioritaskan profil suara Bahasa Indonesia terbaik yang terpasang di browser (*Google Bahasa Indonesia*, *Microsoft Gadis Natural*, *Microsoft Ardi*, dsb.) dengan opsi pemilihan karakter suara.
+- **Karaoke Follow-Along (Sorotan Kalimat Berjalan)**: Kalimat materi yang sedang dilafalkan AI otomatis disorot dengan warna emas bercahaya (`.tts-active-sentence`) dan digulirkan secara halus (*smooth auto-scroll*) agar siswa dapat menyimak dan melatih pelafalan kata demi kata.
+- **Interaksi Klik Kalimat**: Siswa dapat mengklik sembarang kalimat di lembaran buku untuk langsung mendengarkan pembacaan mulai dari titik kalimat tersebut.
+- **Panel Pemutar & Visualizer Gelombang Suara**:
+  - Tombol kontrol lengkap: **Putar (Play)**, **Jeda (Pause)**, **Lanjutkan (Resume)**, dan **Berhenti (Stop)**.
+  - Pengatur laju kecepatan bicara: `0.8x` (perlahan untuk siswa pemula), `1.0x` (normal), `1.25x`, hingga `1.5x`.
+  - Animasi dinamis gelombang audio (*Voice Equalizer Wave*) yang bergerak hidup saat suara AI berbicara.
+- **Fitur Auto-Read Saat Membalik Halaman**: Opsi otomatisasi di dock bawah yang memungkinkan buku langsung dibacakan setiap kali siswa membalik ke lembaran berikutnya.
+
 ---
 
 ## 🏗️ Tumpukan Teknologi (*Tech Stack*)

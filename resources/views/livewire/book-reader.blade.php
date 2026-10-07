@@ -434,28 +434,57 @@
                                             <div class="page-body-scrollable">
                                                 <h2 class="page-title">{{ $pg->title ?: 'Halaman ' . $pg->page_number }}</h2>
 
-                                                <!-- Audio Player Narasi (Berkas atau Text-To-Speech) -->
-                                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #475569;">
-                                                        <span>🔊</span>
-                                                        <span>Narator Suara:</span>
-                                                    </div>
-
-                                                    @if($pg->audio_narration_url)
-                                                        <audio controls src="{{ $pg->audio_narration_url }}" style="height: 32px; max-width: 200px;">
+                                                <!-- Audio Player Narasi (Berkas Narator Guru atau Text-To-Speech AI Otomatis) -->
+                                                @if($pg->audio_narration_url)
+                                                    <div class="manual-audio-player" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 8px 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                                        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #166534;">
+                                                            <span>🎙️</span>
+                                                            <span>Rekaman Guru:</span>
+                                                        </div>
+                                                        <audio controls src="{{ $pg->audio_narration_url }}" style="height: 32px; max-width: 220px;">
                                                             Browser tidak mendukung audio.
                                                         </audio>
-                                                    @else
-                                                        <button 
-                                                            onclick="window.speakText(this, 'page-dom-{{ $pg->id }}')" 
-                                                            class="dock-btn" 
-                                                            style="color: var(--primary); background: #e0e7ff; padding: 4px 10px; font-size: 0.75rem;"
-                                                            title="Dengarkan pembacaan teks otomatis (Bahasa Indonesia)"
-                                                        >
-                                                            <span>▶ Bacakan Teks (TTS)</span>
-                                                        </button>
-                                                    @endif
-                                                </div>
+                                                    </div>
+                                                @else
+                                                    <div class="ai-tts-player" id="ai-tts-card-{{ $pg->id }}" data-page-id="{{ $pg->id }}">
+                                                        <div class="ai-tts-header">
+                                                            <div class="ai-tts-title-wrap">
+                                                                <span class="ai-tts-badge">🤖 AI TTS</span>
+                                                                <span>Narasi Suara Otomatis</span>
+                                                            </div>
+                                                            <div class="ai-tts-status-tag" id="tts-status-{{ $pg->id }}">
+                                                                <span class="sound-wave" id="wave-{{ $pg->id }}">
+                                                                    <span class="sound-wave-bar"></span>
+                                                                    <span class="sound-wave-bar"></span>
+                                                                    <span class="sound-wave-bar"></span>
+                                                                    <span class="sound-wave-bar"></span>
+                                                                    <span class="sound-wave-bar"></span>
+                                                                </span>
+                                                                <span class="status-text">Siap Dibacakan</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="ai-tts-controls">
+                                                            <div class="ai-tts-btn-group">
+                                                                <button type="button" class="btn-tts-action btn-play" onclick="window.AITTS.togglePlay('{{ $pg->id }}')" id="btn-tts-play-{{ $pg->id }}">
+                                                                    <span class="icon">▶</span>
+                                                                    <span class="label">Bacakan Teks</span>
+                                                                </button>
+                                                                <button type="button" class="btn-tts-action btn-stop" onclick="window.AITTS.stop()" title="Hentikan Narasi">
+                                                                    <span>⏹</span>
+                                                                    <span>Stop</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="ai-tts-options">
+                                                                <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Laju:</span>
+                                                                <div class="tts-speed-selector">
+                                                                    <button type="button" class="tts-speed-btn" onclick="window.AITTS.setRate(0.85, this)">0.8x</button>
+                                                                    <button type="button" class="tts-speed-btn active" onclick="window.AITTS.setRate(1.0, this)">1.0x</button>
+                                                                    <button type="button" class="tts-speed-btn" onclick="window.AITTS.setRate(1.2, this)">1.2x</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
 
                                                 <!-- Gambar Ilustrasi Jika Ada -->
                                                 @if($pg->featured_image)
@@ -617,11 +646,51 @@
                             <span>Suara</span>
                         </button>
 
-                        <!-- Audio TTS Narrator Toggle -->
-                        <button id="btn-tts-toggle" onclick="window.speakActiveSpread(this)" class="dock-btn" title="Bacakan Teks Halaman Ini Secara Otomatis">
-                            <span id="tts-icon">🔊</span>
-                            <span>Dengarkan</span>
-                        </button>
+                        <!-- Audio TTS Narrator Toggle & Settings -->
+                        <div style="position: relative; display: flex; align-items: center; gap: 2px;">
+                            <button id="btn-tts-toggle" onclick="window.speakActiveSpread(this)" class="dock-btn" title="Bacakan Teks Halaman Ini Secara Otomatis">
+                                <span id="tts-icon">🔊</span>
+                                <span>Dengarkan</span>
+                            </button>
+                            <button id="btn-tts-settings" onclick="window.AITTS.toggleSettingsPopover(event)" class="dock-btn" title="Pengaturan Narator AI (Suara & Laju)" style="padding: 0 8px;">
+                                <span>⚙️</span>
+                            </button>
+
+                            <!-- Floating Popover Settings TTS -->
+                            <div id="tts-settings-popover" class="tts-popover">
+                                <div class="tts-popover-header">
+                                    <span>⚙️ Pengaturan Narasi AI</span>
+                                    <button type="button" onclick="window.AITTS.toggleSettingsPopover(event)" style="background:none; border:none; cursor:pointer; font-size:12px; color:#94a3b8;">✕</button>
+                                </div>
+                                <div class="tts-popover-row">
+                                    <label class="tts-popover-label">
+                                        <span>Pilihan Suara AI</span>
+                                        <span style="font-size: 10px; color: #4f46e5; font-weight:700;">id-ID</span>
+                                    </label>
+                                    <select id="tts-voice-dropdown" class="tts-voice-select" style="width: 100%; max-width: 100%;" onchange="window.AITTS.setVoice(this.value)">
+                                        <option value="">Memuat suara bahasa Indonesia...</option>
+                                    </select>
+                                </div>
+                                <div class="tts-popover-row">
+                                    <label class="tts-popover-label">
+                                        <span>Kecepatan Bicara</span>
+                                        <span id="tts-current-speed-label" style="color: #4f46e5;">1.0x</span>
+                                    </label>
+                                    <div class="tts-speed-selector" style="width: 100%; display: flex; justify-content: space-between;">
+                                        <button type="button" class="tts-speed-btn" style="flex:1;" onclick="window.AITTS.setRate(0.8, this)">0.8x</button>
+                                        <button type="button" class="tts-speed-btn active" style="flex:1;" onclick="window.AITTS.setRate(1.0, this)">1.0x</button>
+                                        <button type="button" class="tts-speed-btn" style="flex:1;" onclick="window.AITTS.setRate(1.25, this)">1.25x</button>
+                                        <button type="button" class="tts-speed-btn" style="flex:1;" onclick="window.AITTS.setRate(1.5, this)">1.5x</button>
+                                    </div>
+                                </div>
+                                <div class="tts-popover-row" style="margin-bottom: 0; padding-top: 6px; border-top: 1px solid #f1f5f9;">
+                                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #334155;">
+                                        <span>Bacakan otomatis saat membalik halaman</span>
+                                        <input type="checkbox" id="tts-autoread-checkbox" onchange="window.AITTS.toggleAutoRead(this.checked)" style="accent-color: #4f46e5; width: 16px; height: 16px; cursor: pointer;">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="dock-divider"></div>
 
@@ -750,6 +819,11 @@
                                     } catch(err) {
                                         // Ignore progress error if Livewire is busy
                                     }
+
+                                    // Auto-Read or sync AI TTS when page flips
+                                    if (window.AITTS && typeof window.AITTS.onPageFlip === 'function') {
+                                        window.AITTS.onPageFlip(pageIdx);
+                                    }
                                 });
 
                                 // Global jump function for Table of Contents & buttons
@@ -848,69 +922,17 @@
                         }
                     };
 
-                    // Text-To-Speech (TTS) Narrator
-                    let ttsSpeaking = false;
+                    // Text-To-Speech (TTS) Delegation to Global AITTS Engine
                     window.speakActiveSpread = function (btn) {
-                        if (!('speechSynthesis' in window)) {
-                            alert('Browser Anda belum mendukung Text-to-Speech.');
-                            return;
+                        if (window.AITTS) {
+                            window.AITTS.speakCurrentSpread(btn);
                         }
-
-                        if (ttsSpeaking) {
-                            window.speechSynthesis.cancel();
-                            ttsSpeaking = false;
-                            btn.classList.remove('active');
-                            document.getElementById('tts-icon').innerText = '🔊';
-                            return;
-                        }
-
-                        // Collect text from visible pages
-                        const pageFlip = window.pageFlipInstance;
-                        const currentIdx = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
-                        const pages = document.querySelectorAll('.flip-page');
-                        const activePageEl = pages[currentIdx];
-
-                        if (!activePageEl) return;
-                        const textContent = activePageEl.querySelector('.page-text-content');
-                        const textToRead = textContent ? textContent.innerText : activePageEl.innerText;
-
-                        if (!textToRead.trim()) return;
-
-                        window.speechSynthesis.cancel();
-                        const utterance = new SpeechSynthesisUtterance(textToRead);
-                        utterance.lang = 'id-ID';
-                        utterance.rate = 0.95;
-
-                        utterance.onstart = () => {
-                            ttsSpeaking = true;
-                            btn.classList.add('active');
-                            document.getElementById('tts-icon').innerText = '⏹';
-                        };
-
-                        utterance.onend = utterance.onerror = () => {
-                            ttsSpeaking = false;
-                            btn.classList.remove('active');
-                            document.getElementById('tts-icon').innerText = '🔊';
-                        };
-
-                        window.speechSynthesis.speak(utterance);
                     };
 
                     window.speakText = function (btn, domId) {
-                        if (!('speechSynthesis' in window)) {
-                            alert('Browser Anda belum mendukung Text-to-Speech.');
-                            return;
+                        if (window.AITTS) {
+                            window.AITTS.togglePlayByDomId(domId);
                         }
-                        const el = document.getElementById(domId);
-                        if (!el) return;
-                        const textContent = el.querySelector('.page-text-content');
-                        const text = textContent ? textContent.innerText : el.innerText;
-
-                        window.speechSynthesis.cancel();
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'id-ID';
-                        utterance.rate = 0.95;
-                        window.speechSynthesis.speak(utterance);
                     };
                 </script>
 
@@ -930,26 +952,57 @@
                             </div>
                         </div>
 
-                        <!-- Audio Narration Bar -->
-                        <div class="audio-narration-bar">
-                            <div class="audio-label">
-                                <span class="sound-wave-icon">🔊</span>
-                                <span>Dengarkan Narasi:</span>
-                            </div>
-                            @if($currentPage->audio_narration_url)
-                                <audio controls src="{{ $currentPage->audio_narration_url }}">
+                        <!-- Audio Narration Bar (Berkas Guru atau AI TTS) -->
+                        @if($currentPage->audio_narration_url)
+                            <div class="manual-audio-player" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: #166534;">
+                                    <span>🎙️</span>
+                                    <span>Rekaman Narator Guru:</span>
+                                </div>
+                                <audio controls src="{{ $currentPage->audio_narration_url }}" style="height: 34px;">
                                     Browser Anda tidak mendukung audio player.
                                 </audio>
-                            @else
-                                <button 
-                                    onclick="window.speakText(this, 'focus-content-area')" 
-                                    class="dock-btn" 
-                                    style="color: var(--primary); background: #e0e7ff; padding: 6px 14px;"
-                                >
-                                    <span>▶ Bacakan Teks (TTS)</span>
-                                </button>
-                            @endif
-                        </div>
+                            </div>
+                        @else
+                            <div class="ai-tts-player" id="ai-tts-card-focus-{{ $currentPage->id }}" data-page-id="{{ $currentPage->id }}" style="margin-bottom: 20px;">
+                                <div class="ai-tts-header">
+                                    <div class="ai-tts-title-wrap">
+                                        <span class="ai-tts-badge">🤖 AI TTS</span>
+                                        <span>Narator AI Berbahasa Indonesia</span>
+                                    </div>
+                                    <div class="ai-tts-status-tag" id="tts-status-focus-{{ $currentPage->id }}">
+                                        <span class="sound-wave" id="wave-focus-{{ $currentPage->id }}">
+                                            <span class="sound-wave-bar"></span>
+                                            <span class="sound-wave-bar"></span>
+                                            <span class="sound-wave-bar"></span>
+                                            <span class="sound-wave-bar"></span>
+                                            <span class="sound-wave-bar"></span>
+                                        </span>
+                                        <span class="status-text">Siap Dibacakan</span>
+                                    </div>
+                                </div>
+                                <div class="ai-tts-controls">
+                                    <div class="ai-tts-btn-group">
+                                        <button type="button" class="btn-tts-action btn-play" onclick="window.AITTS.togglePlay('{{ $currentPage->id }}', true)" id="btn-tts-play-focus-{{ $currentPage->id }}">
+                                            <span class="icon">▶</span>
+                                            <span class="label">Bacakan Teks</span>
+                                        </button>
+                                        <button type="button" class="btn-tts-action btn-stop" onclick="window.AITTS.stop()" title="Hentikan Narasi">
+                                            <span>⏹</span>
+                                            <span>Stop</span>
+                                        </button>
+                                    </div>
+                                    <div class="ai-tts-options">
+                                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Laju:</span>
+                                        <div class="tts-speed-selector">
+                                            <button type="button" class="tts-speed-btn" onclick="window.AITTS.setRate(0.85, this)">0.8x</button>
+                                            <button type="button" class="tts-speed-btn active" onclick="window.AITTS.setRate(1.0, this)">1.0x</button>
+                                            <button type="button" class="tts-speed-btn" onclick="window.AITTS.setRate(1.2, this)">1.2x</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Featured Illustration Image -->
                         @if($currentPage->featured_image)
@@ -1559,6 +1612,566 @@
                     alert('Gagal menyalin rangkuman.');
                 });
             };
+        })();
+    </script>
+
+    <!-- ========================================================================== -->
+    <!-- AI TEXT-TO-SPEECH (TTS) GLOBAL ENGINE                                      -->
+    <!-- ========================================================================== -->
+    <script>
+        (function() {
+            window.AITTS = {
+                isPlaying: false,
+                isPaused: false,
+                activePageId: null,
+                isFocusMode: false,
+                sentences: [],
+                currentSentenceIdx: 0,
+                rate: 1.0,
+                autoReadOnFlip: false,
+                voices: [],
+                preferredVoiceName: null,
+
+                init: function() {
+                    if (!('speechSynthesis' in window)) {
+                        console.warn('Browser does not support SpeechSynthesis API.');
+                        return;
+                    }
+
+                    // Muat preferensi laju bicara
+                    const savedRate = localStorage.getItem('tts_rate');
+                    if (savedRate) {
+                        this.rate = parseFloat(savedRate);
+                    }
+
+                    // Muat preferensi auto-read
+                    const savedAuto = localStorage.getItem('tts_auto_read');
+                    if (savedAuto === 'true') {
+                        this.autoReadOnFlip = true;
+                        const cb = document.getElementById('tts-autoread-checkbox');
+                        if (cb) cb.checked = true;
+                    }
+
+                    // Muat preferensi nama suara
+                    this.preferredVoiceName = localStorage.getItem('tts_preferred_voice') || null;
+
+                    // Dengarkan saat daftar suara browser siap
+                    this.loadVoices();
+                    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                        window.speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                    }
+
+                    // Sync UI button kecepatan
+                    this.syncSpeedButtons(this.rate);
+
+                    // Tutup popover jika user klik di luar
+                    document.addEventListener('click', (e) => {
+                        const popover = document.getElementById('tts-settings-popover');
+                        const btn = document.getElementById('btn-tts-settings');
+                        if (popover && popover.classList.contains('show')) {
+                            if (!popover.contains(e.target) && btn && !btn.contains(e.target)) {
+                                popover.classList.remove('show');
+                            }
+                        }
+                    });
+                },
+
+                loadVoices: function() {
+                    if (!('speechSynthesis' in window)) return;
+                    const allVoices = window.speechSynthesis.getVoices();
+                    if (!allVoices || allVoices.length === 0) return;
+
+                    // Prioritaskan suara Bahasa Indonesia
+                    const idVoices = allVoices.filter(v => {
+                        const l = (v.lang || '').toLowerCase();
+                        const n = (v.name || '').toLowerCase();
+                        return l.startsWith('id') || l === 'id_id' || l === 'id-id' || n.includes('indonesia') || n.includes('gadis') || n.includes('ardi');
+                    });
+
+                    this.voices = idVoices.length > 0 ? idVoices : allVoices;
+
+                    const dropdown = document.getElementById('tts-voice-dropdown');
+                    if (dropdown) {
+                        dropdown.innerHTML = '';
+                        if (idVoices.length > 0) {
+                            idVoices.forEach(v => {
+                                const opt = document.createElement('option');
+                                opt.value = v.name;
+                                opt.textContent = `${v.name} (${v.lang})`;
+                                if (this.preferredVoiceName === v.name) {
+                                    opt.selected = true;
+                                }
+                                dropdown.appendChild(opt);
+                            });
+                        } else {
+                            const opt = document.createElement('option');
+                            opt.value = '';
+                            opt.textContent = 'Suara Baku Bahasa Indonesia (Sistem)';
+                            dropdown.appendChild(opt);
+                        }
+                    }
+                },
+
+                getBestVoice: function() {
+                    if (!this.voices || this.voices.length === 0) return null;
+
+                    // 1. Jika ada preferensi tersimpan
+                    if (this.preferredVoiceName) {
+                        const matched = this.voices.find(v => v.name === this.preferredVoiceName);
+                        if (matched) return matched;
+                    }
+
+                    // 2. Prioritaskan suara Natural / Google / Microsoft id-ID
+                    const natural = this.voices.find(v => {
+                        const n = v.name.toLowerCase();
+                        const l = (v.lang || '').toLowerCase();
+                        return (l.startsWith('id') || l.includes('ind')) && (n.includes('natural') || n.includes('google') || n.includes('online') || n.includes('gadis'));
+                    });
+                    if (natural) return natural;
+
+                    // 3. Suara pertama ber-lang id
+                    const firstId = this.voices.find(v => (v.lang || '').toLowerCase().startsWith('id'));
+                    return firstId || this.voices[0] || null;
+                },
+
+                toggleSettingsPopover: function(e) {
+                    if (e) e.stopPropagation();
+                    const popover = document.getElementById('tts-settings-popover');
+                    if (popover) {
+                        popover.classList.toggle('show');
+                    }
+                },
+
+                setVoice: function(voiceName) {
+                    this.preferredVoiceName = voiceName;
+                    localStorage.setItem('tts_preferred_voice', voiceName);
+                    if (window.showToast) window.showToast('Karakter suara AI dipilih: ' + voiceName + ' 🗣️');
+                },
+
+                setRate: function(newRate, btn) {
+                    this.rate = parseFloat(newRate);
+                    localStorage.setItem('tts_rate', this.rate.toString());
+                    this.syncSpeedButtons(this.rate);
+
+                    // Jika sedang berbicara, ulangi kalimat saat ini dengan kecepatan baru
+                    if (this.isPlaying && !this.isPaused) {
+                        window.speechSynthesis.cancel();
+                        this.speakNextSentence();
+                    }
+                },
+
+                syncSpeedButtons: function(rateVal) {
+                    const label = document.getElementById('tts-current-speed-label');
+                    if (label) label.innerText = rateVal + 'x';
+
+                    document.querySelectorAll('.tts-speed-btn').forEach(b => {
+                        const bRate = parseFloat(b.innerText);
+                        if (Math.abs(bRate - rateVal) < 0.05) {
+                            b.classList.add('active');
+                        } else {
+                            b.classList.remove('active');
+                        }
+                    });
+                },
+
+                toggleAutoRead: function(isEnabled) {
+                    this.autoReadOnFlip = isEnabled;
+                    localStorage.setItem('tts_auto_read', isEnabled ? 'true' : 'false');
+                    if (window.showToast) {
+                        window.showToast(isEnabled ? '🤖 Auto-Read Diaktifkan: Membaca otomatis saat buka halaman.' : 'Auto-Read Dinonaktifkan.');
+                    }
+                },
+
+                prepareSentences: function(pageId, isFocus) {
+                    let container = null;
+                    if (isFocus) {
+                        container = document.getElementById('focus-content-area');
+                    } else {
+                        container = document.querySelector(`.page-text-content[data-page-id="${pageId}"]`) || document.getElementById(`page-dom-${pageId}`);
+                    }
+
+                    if (!container) return [];
+
+                    // Jika sudah pernah diproses untuk pageId ini dan DOM spans masih ada
+                    const existingSpans = container.querySelectorAll('.tts-sentence');
+                    if (existingSpans.length > 0 && container.dataset.ttsPrepared === 'true') {
+                        const list = [];
+                        existingSpans.forEach(sp => {
+                            const idx = parseInt(sp.dataset.sentenceIdx, 10);
+                            list[idx] = { text: sp.innerText.trim(), el: sp };
+                        });
+                        return list.filter(Boolean);
+                    }
+
+                    const sentenceList = [];
+                    // Temukan semua elemen blok teks
+                    const blocks = container.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+                    if (blocks.length > 0) {
+                        blocks.forEach(block => {
+                            const rawText = block.innerText.trim();
+                            if (!rawText) return;
+
+                            // Pisahkan teks menjadi kalimat dengan tanda baca . ? !
+                            const parts = rawText.match(/[^.!?\n]+[.!?]+["”']?|[^.!?\n]+$/g);
+                            if (parts && parts.length > 1) {
+                                block.innerHTML = parts.map(part => {
+                                    const clean = part.trim();
+                                    if (!clean) return '';
+                                    const idx = sentenceList.length;
+                                    sentenceList.push({ text: clean, el: null });
+                                    return `<span class="tts-sentence" data-sentence-idx="${idx}" title="Klik untuk dengarkan kalimat ini">${part} </span>`;
+                                }).join('');
+
+                                block.querySelectorAll('.tts-sentence').forEach(span => {
+                                    const idx = parseInt(span.dataset.sentenceIdx, 10);
+                                    if (sentenceList[idx]) {
+                                        sentenceList[idx].el = span;
+                                        span.onclick = (e) => {
+                                            e.stopPropagation();
+                                            window.AITTS.playFromSentence(pageId, idx, isFocus);
+                                        };
+                                    }
+                                });
+                            } else {
+                                block.classList.add('tts-sentence');
+                                const idx = sentenceList.length;
+                                block.dataset.sentenceIdx = idx;
+                                block.title = 'Klik untuk dengarkan kalimat ini';
+                                block.onclick = (e) => {
+                                    e.stopPropagation();
+                                    window.AITTS.playFromSentence(pageId, idx, isFocus);
+                                };
+                                sentenceList.push({ text: rawText, el: block });
+                            }
+                        });
+                    } else {
+                        // Fallback jika tidak ada tag paragraf
+                        const rawText = container.innerText.trim();
+                        if (rawText) {
+                            sentenceList.push({ text: rawText, el: container });
+                        }
+                    }
+
+                    container.dataset.ttsPrepared = 'true';
+                    return sentenceList;
+                },
+
+                togglePlay: function(pageId, isFocus = false) {
+                    if (this.isPlaying && this.activePageId === pageId) {
+                        if (this.isPaused) {
+                            this.resume();
+                        } else {
+                            this.pause();
+                        }
+                    } else {
+                        this.play(pageId, 0, isFocus);
+                    }
+                },
+
+                togglePlayByDomId: function(domId) {
+                    const el = document.getElementById(domId);
+                    if (!el) return;
+                    const pageId = el.dataset.pageId || el.querySelector('[data-page-id]')?.dataset.pageId;
+                    this.togglePlay(pageId || 'focus', domId.includes('focus'));
+                },
+
+                play: function(pageId, fromIndex = 0, isFocus = false) {
+                    if (!('speechSynthesis' in window)) {
+                        alert('Browser Anda belum mendukung Text-to-Speech.');
+                        return;
+                    }
+
+                    // Reset audio sebelumnya
+                    this.stop(false);
+
+                    this.sentences = this.prepareSentences(pageId, isFocus);
+                    if (!this.sentences || this.sentences.length === 0) {
+                        if (window.showToast) window.showToast('Tidak ada teks materi di halaman ini.');
+                        return;
+                    }
+
+                    this.isPlaying = true;
+                    this.isPaused = false;
+                    this.activePageId = pageId;
+                    this.isFocusMode = isFocus;
+                    this.currentSentenceIdx = Math.max(0, Math.min(fromIndex, this.sentences.length - 1));
+
+                    // Update UI Player Card
+                    this.updatePlayerCardUI('playing');
+                    this.updateDockButtonUI('playing');
+
+                    this.speakNextSentence();
+                },
+
+                playFromSentence: function(pageId, sentenceIdx, isFocus = false) {
+                    this.play(pageId, sentenceIdx, isFocus);
+                },
+
+                speakNextSentence: function() {
+                    if (!this.isPlaying || this.isPaused) return;
+
+                    if (this.currentSentenceIdx >= this.sentences.length) {
+                        // Selesai membaca seluruh kalimat
+                        this.stop(true);
+                        this.updatePlayerCardUI('completed');
+                        if (window.showToast) {
+                            window.showToast('Pembacaan halaman selesai! 📖✨');
+                        }
+                        return;
+                    }
+
+                    const item = this.sentences[this.currentSentenceIdx];
+                    if (!item || !item.text) {
+                        this.currentSentenceIdx++;
+                        this.speakNextSentence();
+                        return;
+                    }
+
+                    // Bersihkan highlight kalimat sebelumnya
+                    document.querySelectorAll('.tts-active-sentence').forEach(el => el.classList.remove('tts-active-sentence'));
+
+                    // Highlight kalimat yang sedang dibacakan
+                    if (item.el) {
+                        item.el.classList.add('tts-active-sentence');
+                        try {
+                            item.el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                        } catch(e) {}
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(item.text);
+                    utterance.lang = 'id-ID';
+                    utterance.rate = this.rate;
+                    utterance.pitch = 1.0;
+
+                    const bestVoice = this.getBestVoice();
+                    if (bestVoice) {
+                        utterance.voice = bestVoice;
+                    }
+
+                    utterance.onend = () => {
+                        if (!this.isPlaying || this.isPaused) return;
+                        this.currentSentenceIdx++;
+                        // Jeda alami antar kalimat 120ms
+                        setTimeout(() => {
+                            if (this.isPlaying && !this.isPaused) {
+                                this.speakNextSentence();
+                            }
+                        }, 120);
+                    };
+
+                    utterance.onerror = (e) => {
+                        if (e.error === 'interrupted' || e.error === 'canceled') return;
+                        console.warn('TTS Speech error:', e);
+                        this.currentSentenceIdx++;
+                        if (this.isPlaying && !this.isPaused) {
+                            this.speakNextSentence();
+                        }
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                },
+
+                pause: function() {
+                    if (!this.isPlaying) return;
+                    this.isPaused = true;
+                    window.speechSynthesis.pause();
+                    this.updatePlayerCardUI('paused');
+                    this.updateDockButtonUI('paused');
+                },
+
+                resume: function() {
+                    if (!this.isPlaying) return;
+                    this.isPaused = false;
+                    this.updatePlayerCardUI('playing');
+                    this.updateDockButtonUI('playing');
+
+                    window.speechSynthesis.resume();
+
+                    // Workaround untuk bug jeda lama di Chromium
+                    setTimeout(() => {
+                        if (this.isPlaying && !this.isPaused && !window.speechSynthesis.speaking) {
+                            this.speakNextSentence();
+                        }
+                    }, 250);
+                },
+
+                stop: function(resetIdx = true) {
+                    this.isPlaying = false;
+                    this.isPaused = false;
+                    window.speechSynthesis.cancel();
+
+                    // Bersihkan highlight
+                    document.querySelectorAll('.tts-active-sentence').forEach(el => el.classList.remove('tts-active-sentence'));
+
+                    this.updatePlayerCardUI('stopped');
+                    this.updateDockButtonUI('stopped');
+
+                    if (resetIdx) {
+                        this.currentSentenceIdx = 0;
+                    }
+                },
+
+                updatePlayerCardUI: function(state) {
+                    const cardId = this.isFocusMode ? `ai-tts-card-focus-${this.activePageId}` : `ai-tts-card-${this.activePageId}`;
+                    const btnPlayId = this.isFocusMode ? `btn-tts-play-focus-${this.activePageId}` : `btn-tts-play-${this.activePageId}`;
+                    const waveId = this.isFocusMode ? `wave-focus-${this.activePageId}` : `wave-${this.activePageId}`;
+                    const statusId = this.isFocusMode ? `tts-status-focus-${this.activePageId}` : `tts-status-${this.activePageId}`;
+
+                    const card = document.getElementById(cardId);
+                    const btnPlay = document.getElementById(btnPlayId);
+                    const wave = document.getElementById(waveId);
+                    const statusEl = document.getElementById(statusId);
+
+                    if (state === 'playing') {
+                        if (card) card.classList.add('is-speaking');
+                        if (wave) wave.classList.add('active');
+                        if (btnPlay) {
+                            btnPlay.className = 'btn-tts-action btn-pause';
+                            btnPlay.innerHTML = '<span class="icon">⏸</span><span class="label">Jeda</span>';
+                        }
+                        if (statusEl) {
+                            const txt = statusEl.querySelector('.status-text');
+                            if (txt) txt.innerText = 'Sedang Berbicara... 🎙️';
+                            statusEl.classList.add('speaking');
+                        }
+                    } else if (state === 'paused') {
+                        if (wave) wave.classList.remove('active');
+                        if (btnPlay) {
+                            btnPlay.className = 'btn-tts-action btn-play';
+                            btnPlay.innerHTML = '<span class="icon">▶</span><span class="label">Lanjutkan</span>';
+                        }
+                        if (statusEl) {
+                            const txt = statusEl.querySelector('.status-text');
+                            if (txt) txt.innerText = 'Dijeda ⏸';
+                        }
+                    } else if (state === 'completed') {
+                        if (card) card.classList.remove('is-speaking');
+                        if (wave) wave.classList.remove('active');
+                        if (btnPlay) {
+                            btnPlay.className = 'btn-tts-action btn-play';
+                            btnPlay.innerHTML = '<span class="icon">▶</span><span class="label">Ulangi Bacaan</span>';
+                        }
+                        if (statusEl) {
+                            const txt = statusEl.querySelector('.status-text');
+                            if (txt) txt.innerText = 'Selesai Membaca ✅';
+                            statusEl.classList.remove('speaking');
+                        }
+                    } else {
+                        // stopped
+                        document.querySelectorAll('.ai-tts-player').forEach(c => c.classList.remove('is-speaking'));
+                        document.querySelectorAll('.sound-wave').forEach(w => w.classList.remove('active'));
+                        document.querySelectorAll('.btn-tts-action.btn-pause').forEach(b => {
+                            b.className = 'btn-tts-action btn-play';
+                            b.innerHTML = '<span class="icon">▶</span><span class="label">Bacakan Teks</span>';
+                        });
+                        document.querySelectorAll('.ai-tts-status-tag').forEach(s => {
+                            s.classList.remove('speaking');
+                            const txt = s.querySelector('.status-text');
+                            if (txt) txt.innerText = 'Siap Dibacakan';
+                        });
+                    }
+                },
+
+                updateDockButtonUI: function(state) {
+                    const dockBtn = document.getElementById('btn-tts-toggle');
+                    const ttsIcon = document.getElementById('tts-icon');
+                    if (!dockBtn) return;
+
+                    if (state === 'playing') {
+                        dockBtn.classList.add('active');
+                        if (ttsIcon) ttsIcon.innerText = '⏸';
+                    } else if (state === 'paused') {
+                        dockBtn.classList.add('active');
+                        if (ttsIcon) ttsIcon.innerText = '▶';
+                    } else {
+                        dockBtn.classList.remove('active');
+                        if (ttsIcon) ttsIcon.innerText = '🔊';
+                    }
+                },
+
+                onPageFlip: function(pageIdx) {
+                    // Hentikan pembacaan halaman lama
+                    if (this.isPlaying) {
+                        this.stop(true);
+                    }
+
+                    // Jika opsi auto-read aktif, jalankan di halaman baru
+                    if (this.autoReadOnFlip) {
+                        setTimeout(() => {
+                            const pageFlip = window.pageFlipInstance;
+                            if (!pageFlip) return;
+                            const curIdx = pageFlip.getCurrentPageIndex();
+                            const pages = document.querySelectorAll('.flip-page');
+                            const activePageEl = pages[curIdx];
+                            if (!activePageEl) return;
+
+                            const playerEl = activePageEl.querySelector('.ai-tts-player');
+                            if (playerEl && playerEl.dataset.pageId) {
+                                this.play(playerEl.dataset.pageId, 0, false);
+                            }
+                        }, 450);
+                    }
+                },
+
+                speakCurrentSpread: function(btn) {
+                    if (this.isPlaying) {
+                        if (this.isPaused) {
+                            this.resume();
+                        } else {
+                            this.pause();
+                        }
+                        return;
+                    }
+
+                    // Temukan halaman aktif di 3D flipbook
+                    const pageFlip = window.pageFlipInstance;
+                    if (!pageFlip) {
+                        // Focus Mode
+                        const focusArea = document.getElementById('focus-content-area');
+                        if (focusArea) {
+                            this.togglePlay(focusArea.dataset.pageId || 'focus', true);
+                        }
+                        return;
+                    }
+
+                    const curIdx = pageFlip.getCurrentPageIndex();
+                    const pages = document.querySelectorAll('.flip-page');
+                    const activePageEl = pages[curIdx];
+
+                    if (!activePageEl) {
+                        if (window.showToast) window.showToast('Silakan buka halaman materi buku terlebih dahulu.');
+                        return;
+                    }
+
+                    // Periksa apakah halaman memiliki audio manual guru
+                    const manualAudio = activePageEl.querySelector('audio');
+                    if (manualAudio && manualAudio.src) {
+                        if (manualAudio.paused) {
+                            manualAudio.play().catch(() => {});
+                            if (window.showToast) window.showToast('Memutar rekaman narator guru 🎙️');
+                        } else {
+                            manualAudio.pause();
+                        }
+                        return;
+                    }
+
+                    // Jika tidak ada audio manual, gunakan AI TTS
+                    const playerEl = activePageEl.querySelector('.ai-tts-player');
+                    if (playerEl && playerEl.dataset.pageId) {
+                        this.togglePlay(playerEl.dataset.pageId, false);
+                    } else {
+                        // Halaman sampul atau tanpa konten
+                        if (window.showToast) window.showToast('Halaman ini tidak memiliki teks narasi untuk dibacakan. 📄');
+                    }
+                }
+            };
+
+            // Inisialisasi saat DOM siap
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => window.AITTS.init());
+            } else {
+                window.AITTS.init();
+            }
         })();
     </script>
 </div>
